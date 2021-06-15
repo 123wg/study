@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // 1.坐标转换方法 [参考]https://segmentfault.com/a/1190000004882447
+    const windowTocanvas = (x,y)=>{
+        const cbox = canvas.getBoundingClientRect()
+        return {
+            x: x-cbox.left*(canvas.width/cbox.width),
+            y:y-cbox.top*(canvas.height/cbox.height)
+        }
+    }
+
+    let drawingImgData = null // 绘图表面数据
+    let mouseDownObj = {} // 鼠标按下对象
+    let dragging = false; // 鼠标是否在拖拽状态
+    let rubberbandRect = {}
+
+    // 保存绘图表面
+    function saveDrawingSurface(){
+        console.log('保存绘图表面');
+        drawingImgData =  ctx.getImageData(0,0,canvas.width,canvas.height) // 复制画布上的像素数据
+    }
+
+    // 恢复绘图表面
+    function restoreDrawingSurface(){
+        ctx.putImageData(drawingImgData,0,0)
+    }
+
+    // 更新矩形边框
+    function updateRubberbandRectangle(loc){
+        rubberbandRect.width = loc.x - mouseDownObj.x
+        rubberbandRect.height = loc.y - mouseDownObj.y
+        rubberbandRect.left = Math.max(mouseDownObj.x,loc.x)
+        rubberbandRect.top = Math.max(mouseDownObj.y,loc.y)
+    }
+
+    // 绘制线条
+    function drawRubberbandShape(loc){
+        let radius = 0
+        if(loc.y === mouseDownObj.y) {
+            radius  = Math.abs(loc.x-mouseDownObj.x)
+        }else {
+            angle = Math.atan(rubberbandRect.height/rubberbandRect.width)
+            radius = Math.abs(rubberbandRect.height/Math.sin(angle))
+        }
+
+        ctx.beginPath()
+        ctx.arc(mouseDownObj.x,mouseDownObj.y,radius,0,Math.PI*2,true)
+        ctx.stroke()
+    }
+
+    // 更新线条
+
+    // 更新橡皮筋
+    function updateRubberband(loc){
+        // 更新矩形
+        updateRubberbandRectangle(loc)
+        // 更新线条
+        drawRubberbandShape(loc)
+    }
+
+    // 画横线
+    function drawHorizontalLine(y){
+        ctx.beginPath()
+        ctx.moveTo(0,y+0.5)
+        ctx.lineTo(ctx.canvas.width,y+0.5)
+        ctx.stroke()
+    }
+
+    // 画竖线
+    function drawVerticalLine(x){
+        ctx.beginPath()
+        ctx.moveTo(x+0.5,0)
+        ctx.lineTo(x+0.5,ctx.canvas.height)
+        ctx.stroke()
+    }
+
+    // 绘制矩形边框辅助线
+    function drawGuidewires(x,y){
+        ctx.strokeStyle = 'rgba(0,0,230.0.4)'
+        ctx.lineWidth = 0.5
+        // 画横线
+        drawHorizontalLine(y)
+        // 画竖线
+        drawVerticalLine(x)
+    }
+
+    // 鼠标按下鼠标按下事件
+    canvas.onmousedown = (e)=>{
+        // 获取当前的坐标
+        const loc = windowTocanvas(e.clientX,e.clientY)
+        // 保存已经绘制的图像
+        saveDrawingSurface()
+        mouseDownObj.x = loc.x;
+        mouseDownObj.y = loc.y
+        dragging = true
+    }
+
+    // 鼠标移动事件
+    canvas.onmousemove = (e)=>{
+        // 获取坐标 
+        if(dragging) {
+            e.preventDefault()
+            const loc = windowTocanvas(e.clientX,e.clientY)
+            // 恢复绘图表面
+            restoreDrawingSurface()
+            updateRubberband(loc)
+            // 开始画辅助的矩形
+            drawGuidewires(loc.x,loc.y)
+        }
+       
+
+    }
+
+    // 鼠标抬起事件
+    canvas.onmouseup = (e)=>{
+        const loc = windowTocanvas(e.clientX,e.clientY)
+        // // 恢复绘图表面
+        restoreDrawingSurface()
+        updateRubberband(loc)
+        dragging = false
+    }
+
+</script>
+</html>

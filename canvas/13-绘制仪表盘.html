@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            /* border: 1px solid red; */
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const gridStep = 10 // 网格步长
+    const circle = {
+        x:ctx.canvas.width/2,
+        y:ctx.canvas.height/2,
+        radius:180
+    }
+    const outWidth = 55 // 外圈宽度
+    const innerWidth = 35 // 内圈宽度
+    const centerRadius = 10 // 中心圆半径
+    const pointRadius = 5 // 指针外面的点的半径大小
+    const tickWidth = 20 // 刻度的长度
+    
+    // 自己的想法
+    // 辅助线条 外圈圆形 内圈圆形 中间圆形 指针圆形 指针线条 刻度 刻度标记
+    
+    // 开始绘制方法
+    function drawClock(){
+        // 绘制中间的重心
+        drawCenterCircle()
+        // 绘制指针的线条
+        drawPointerLine()
+        // 绘制圆圈
+        drawInnerCircle()
+        // 绘制指针上的圆圈
+        drawPointCircle()
+        // 绘制圆上的刻度
+        drawCircleCalibration()
+        // 绘制院上的文本标签
+        drawCircleText()
+    }
+
+    // 网格
+    function drawGrid(){
+        ctx.save()
+        const totalW = ctx.canvas.width
+        const totalH = ctx.canvas.height
+        
+        ctx.shadowColor = undefined
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 0
+        ctx.strokeStyle = 'lightgray'
+        ctx.lineWidth = 0.5
+        ctx.fillStyle = '#fff'
+        
+        
+        ctx.fillRect(0,0,totalW,totalH)
+        // 绘制竖线
+        for(let i = gridStep+0.5;i<totalW;i+=gridStep) {
+            ctx.beginPath()
+            ctx.moveTo(i,0)
+            ctx.lineTo(i,totalH)
+            ctx.stroke()
+        }
+        // 绘制横线
+        for(let i = gridStep+0.5;i<totalH;i+=gridStep) {
+            ctx.beginPath()
+            ctx.moveTo(0,i)
+            ctx.lineTo(totalW,i)
+            ctx.stroke()
+        }
+        ctx.restore()
+    }
+
+    // 外圈圆
+    function drawOutCircle() {
+        ctx.shadowColor = 'rgba(0,0,0,0.7)'
+        ctx.shadowOffsetX = 3
+        ctx.shadowOffsetY = 3
+        ctx.shadowBlur = 6
+        ctx.strokeStyle = 'rgba(100,140,230,0.5)'
+        ctx.beginPath()
+        ctx.arc(circle.x,circle.y,circle.radius+outWidth,0,Math.PI*2,true) // 顺时针绘制
+        ctx.stroke()
+    }
+
+    // 内圈圆
+    function drawInnerCircle(){
+        drawOutCircle()
+        
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'
+        // ctx.beginPath() // 不清除子路径
+        ctx.arc(circle.x,circle.y,circle.radius+innerWidth, 0,Math.PI*2,false)
+        ctx.fillStyle = 'rgba(100,140,230,0.1)'
+        ctx.fill()
+        ctx.stroke()
+    }
+
+    // 中心圆
+    function drawCenterCircle(){
+        ctx.beginPath()
+        ctx.save()
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'
+        ctx.fillStyle = 'rgba(80,190,240,0.6)'
+        ctx.arc(circle.x,circle.y,centerRadius,0,Math.PI*2,true)
+        ctx.stroke()
+        ctx.fill()
+        ctx.restore()
+    }
+
+    // 指针线条
+    function drawPointerLine(){
+        const angle = -Math.PI / 4
+        const x = (circle.radius+outWidth-pointRadius)*Math.cos(angle)+circle.x
+        const y = (circle.radius+outWidth-pointRadius)*Math.sin(angle)+circle.y
+        ctx.save()
+        ctx.strokeStyle = 'goldenrod'
+        ctx.fillStyle = 'rgba(250,250,,0,0.6)'
+        ctx.beginPath()
+        ctx.moveTo(circle.x,circle.y)
+        ctx.lineTo(x,y)
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.strokeStyle = 'rgba(100,140,230,0.9)'
+        ctx.arc((circle.radius+outWidth)*Math.cos(angle)+circle.x,(circle.radius+outWidth)*Math.sin(angle)+circle.y,pointRadius,0,Math.PI*2,false)
+        ctx.fill()
+        ctx.stroke()
+        ctx.restore()
+    }
+
+    // 指针里面的圆
+    function drawPointCircle(){
+        ctx.beginPath()
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'
+        ctx.arc(circle.x,circle.y,circle.radius+innerWidth-tickWidth,0,Math.PI*2,false)
+        ctx.stroke()
+    }
+
+    // 圆上的刻度
+    function drawCircleCalibration(){
+        const radius = circle.radius+innerWidth
+        ctx.save()
+        for(let angle = 0,con = 0;angle<Math.PI*2;angle+=Math.PI/64,con++) {
+            drawSingleCalibration(angle,radius,con)
+        }
+        ctx.restore()
+    }
+
+    // 绘制单个刻度
+    function drawSingleCalibration(angle,radius,con){
+        let width = tickWidth
+        if(con%4!==0) width = tickWidth/2
+        const x = (radius-width)*Math.cos(angle)+circle.x
+        const y = (radius-width)*Math.sin(angle)+circle.y
+        ctx.beginPath()
+        ctx.moveTo(x,y)
+        ctx.lineTo(circle.x+radius*Math.cos(angle),circle.y+radius*Math.sin(angle))
+        ctx.strokeStyle = 'rgba(100,140,230,0.7)'
+        ctx.stroke()
+    }
+
+    // 圆上的文字标签
+    function drawCircleText(){
+        const radius = circle.radius+innerWidth
+        for(let angle = 0;angle<Math.PI*2;angle+=Math.PI/8){
+            ctx.beginPath()
+            ctx.fillStyle = 'rgba(0,0,230,0.9)'
+            ctx.fillText(Math.round(180/Math.PI*angle),(radius-2*tickWidth)*Math.cos(angle)+circle.x,(radius-2*tickWidth)*Math.sin(angle)+circle.y)
+        }
+    }
+
+
+    ctx.shadowColor = 'rgba(0,0,0,0.4)'
+    ctx.shadowBlur = 5
+    ctx.shadowOffsetX = 2
+    ctx.shadowOffsetY = 4
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    // 绘制网格
+    // drawGrid()
+    drawClock()
+</script>
+</html>

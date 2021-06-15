@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+     // 1.线段端点lineCap 默认的是 butt round-圆形的，square
+    // 2.连接点 lineJoin 默认为 miter连接处有两个三角形，bevel 半个三角形，round 一个弧
+    // 3.miterlimit属性 表示斜接线的长度与线宽二分之一的比值 如果斜接线太长 就会用bevel方式连接
+
+    ctx.beginPath()
+    ctx.lineWidth = 5
+    ctx.strokeStyle='red'
+    ctx.lineCap = 'round'
+    // ctx.lineJoin = 'bevel'
+    ctx.moveTo(0,10)
+    ctx.lineTo(100,10)
+    ctx.lineTo(0,20)
+    ctx.stroke()
+    
+</script>
+</html>

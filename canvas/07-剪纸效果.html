@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1000' height='800' id="canvas"></canvas>
+</body>
+<script>
+    // 实现剪纸效果 主要是路径方向和非零环绕原则的使用
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 手镯
+    // ctx.beginPath()
+    // ctx.arc(200,200,50,0,Math.PI*2)
+
+    // ctx.arc(200,200,100,0,Math.PI*2,true)
+    // ctx.fill()
+
+    // 矩形剪纸效果
+    ctx.beginPath()
+    ctx.rect(300,300,300,300) // 默认顺时针
+    // 画一个圆形
+    
+    ctx.arc(440,360,50,0,Math.PI*2,true) // 默认顺时针值为false
+
+    // 三角形
+    ctx.moveTo(450,507)
+    ctx.lineTo(425,510)
+    ctx.lineTo(512,600)
+    ctx.closePath()
+    ctx.fill()
+    
+</script>
+</html>

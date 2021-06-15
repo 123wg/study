@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    // arc(x,y,r,开始角度，结束角度，默认false 顺时针)
+    ctx.beginPath()
+    ctx.arc(100,100,50,0,Math.PI,false)
+    ctx.stroke()
+    // arcTo(x1,y1,x2,y2,radius) 以指定的半径绘制一条圆弧
+
+    ctx.strokeStyle = 'red'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(300,300)
+    ctx.lineTo(380,300)
+    ctx.arcTo(430,300,430,350,50)
+    ctx.lineTo(430,430)
+    ctx.stroke()
+    
+    // 绘制圆角矩形
+    function drawRoundRect(strokeStyle,fillStyle,x,y,width,height,radius){
+        ctx.beginPath()
+        ctx.fillStyle = fillStyle
+        ctx.strokeStyle = strokeStyle
+        ctx.moveTo(x+radius,y)
+        ctx.arcTo(x+width,y,x+width,y+height,radius)
+        ctx.arcTo(x+width,y+height,x,y+height,radius)
+        ctx.arcTo(x,y+height,x,y,radius)
+        ctx.arcTo(x,y,x+width,y,radius)
+        ctx.stroke()
+        ctx.fill()
+        
+        
+    }
+
+    drawRoundRect('red','yellow',500,500,100,100,20)
+</script>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1000' height='800' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // 1.阴影作用范围 图形、文本、图像
+    /**
+     * shadowColor:''
+     * shadowOffsetX:''
+     * shadowOffsetY
+     * shadowBlur:'' 高斯模糊处理 
+     */
+    ctx.storkeStyle = 'blue'
+    ctx.lineWidth = 10
+    // 文本阴影
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'
+    ctx.shadowOffsetX = -5
+    ctx.shadowOffsetY = -5
+    ctx.shadowBlur = 5
+    ctx.fillText('测试阴影', 10, 10);
+
+    // 矩形阴影
+    ctx.strokeRect(20,20,200,200)
+    
+    
+</script>
+</html>

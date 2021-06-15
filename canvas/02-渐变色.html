@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1000' height='800' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    // 1.线性渐变 --使用最后一个颜色填充渐变线以外的区域
+    gradient = ctx.createLinearGradient(0, 0, 200, 0);
+    gradient.addColorStop(0, 'blue');
+    gradient.addColorStop(0.25,'white')
+    gradient.addColorStop(0.5,'purple')
+    gradient.addColorStop(0.75,'red')
+    gradient.addColorStop(1,'yellow')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0,0,200,200)
+
+    // 2.径向渐变
+    const gradient1 = ctx.createRadialGradient(canvas.width/2, canvas.height,50, canvas.width/2, 0, 50);
+    gradient1.addColorStop(0,'blue')
+    gradient1.addColorStop(0.25,'yellow')
+    gradient1.addColorStop(0.5,'red')
+    gradient1.addColorStop(0.75,'purple')
+    gradient1.addColorStop(1,'pink')
+    ctx.fillStyle = gradient1
+    ctx.fillRect(0,0,canvas.width,canvas.height)
+    ftx.fill()
+    
+</script>
+</html>
