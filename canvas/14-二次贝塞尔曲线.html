@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='900' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    //1. 二次贝塞尔曲线 一个控制点和两个锚点 quadraticCurveTo(cx,cy,x,y) 从上一点开始绘制一条二次曲线，到(x, y)为止，并且以(cx, cy)作为控制点
+    ctx.beginPath()
+    ctx.moveTo(50,50)
+    ctx.quadraticCurveTo(100,100,150,50)
+    ctx.stroke()
+
+    // 绘制箭头形状的三个尖端
+    const arrowMargin = 30
+    const radius = 7
+    const points = [
+        {
+            x: canvas.width - arrowMargin,
+            y: canvas.height-arrowMargin,
+        },
+        {
+            x: canvas.width - arrowMargin*2,
+            y: canvas.height-arrowMargin,
+        },
+        {
+            x:radius,
+            y:canvas.height/2
+        },
+        {
+            x:arrowMargin,
+            y:canvas.height/2-arrowMargin
+        },
+        {
+            x:canvas.width-arrowMargin,
+            y:arrowMargin
+        },
+        {
+            x:canvas.width-arrowMargin,
+            y:arrowMargin*2
+        }
+    ]
+    ctx.beginPath()
+    ctx.moveTo(canvas.width-arrowMargin,arrowMargin*2)
+    ctx.lineTo(canvas.width-arrowMargin,canvas.height-arrowMargin*2)
+    ctx.quadraticCurveTo(points[0].x,points[0].y,points[1].x,points[1].y)
+    ctx.lineTo(arrowMargin,canvas.height/2+arrowMargin)
+    ctx.quadraticCurveTo(points[2].x,points[2].y,points[3].x,points[3].y)
+    ctx.lineTo(canvas.width-arrowMargin*2,arrowMargin)
+    ctx.quadraticCurveTo(points[4].x,points[4].y,points[5].x,points[5].y)
+    ctx.stroke()
+</script>
+</html>

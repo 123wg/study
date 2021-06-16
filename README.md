@@ -43,9 +43,14 @@
         miterLimit 斜线长度与线宽一半的比值 如果斜线太长 自动使用bevel连接
 
     > 绘制圆与圆弧
-    arc(x,y,r,开始角度，结束角度，默认false 顺时针)
-    arcTo(x1,y1,x2,y2,radius)
-        -[arcTo方法的理解](https://codeplayer.vip/p/j7scu)
+        arc(x,y,r,开始角度，结束角度，默认false 顺时针)
+        arcTo(x1,y1,x2,y2,radius)
+        [arcTo方法的理解](https://codeplayer.vip/p/j7scu)
+    
+    > 贝塞尔曲线
+        quadraticCurveTo(cx,cy,x,y)平方贝塞尔曲线(两个锚点一个控制点) 
+        立方贝塞尔曲线(两个锚点两个控制点)
+
         
 ## 2.设置图形的属性
 ## 3.绘制圆角矩形
