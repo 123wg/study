@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <div class="change" id="changemode">切换模式</div>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+
+   /**
+    * 多边形类
+    * 多边形类 可以拖动的多边形 
+    */
+   class Polygon{
+       constructor(centerX,centerY,radius,sides,startAngle,strokeStyle,fillStyle,filled){
+            this.x = centerX;
+            this.y = centerY;
+            this.radius = radius;
+            this.sides = sides
+            this.startAngle = startAngle
+            this.strokeStyle = strokeStyle
+            this.fillStyle = fillStyle
+            this.filled = filled
+       }
+
+        //    获取顶点
+        getPoints(){
+            const points = []
+            for(let i = 0;i<this.sides;i+=1) {
+                const angle = this.startAngle + Math.PI*2/this.sides*(i+1)
+                points.push({
+                    x: this.radius*Math.cos(angle)+this.x,
+                    y: this.radius*Math.sin(angle)+this.y
+                })
+            }
+            return points;
+        }
+
+        // 创建路径
+        createPath(){
+            const points = this.getPoints()
+            ctx.beginPath()
+            ctx.moveTo(points[0].x,points[0].y)
+            points.forEach(point=>{
+                ctx.lineTo(point.x,point.y)
+            })
+            ctx.closePath()
+        }
+
+        // 描边
+        stroke(){
+            ctx.save()
+            ctx.strokeStyle = this.strokeStyle
+            this.createPath()
+            ctx.stroke()
+            ctx.restore()
+        }
+
+        // 填充
+        fill(){
+            if(this.filled) {
+                ctx.save()
+                ctx.fillStyle = this.fillStyle
+                this.createPath()
+                ctx.fill()
+                ctx.restore()
+            }
+        }
+
+        // 移动
+        move(x,y){
+            this.x = x;
+            this.y = y
+        }
+   }
+
+
+     let drawingImgData = null //已经绘制的数据
+     const mouseDownObj = {} // 鼠标按下时候的位置
+     const rubberbandRect = {} // 辅助矩形对象
+     let dragging = false
+     const polygons = []
+     let mode = 'edit'
+     let curPolygon = null // 当前拖动的节点
+     let dragOffsetX = 0
+     let dragOffsetY = 0
+
+     // 网格
+     function drawGrid(gridStep=10){
+        ctx.save()
+        const totalW = ctx.canvas.width
+        const totalH = ctx.canvas.height    
+        ctx.strokeStyle = 'lightgray'
+        // 绘制竖线
+        for(let i = gridStep+0.5;i<totalW;i+=gridStep) {
+            ctx.beginPath()
+            ctx.moveTo(i,0)
+            ctx.lineTo(i,totalH)
+            ctx.stroke()
+        }
+        // 绘制横线
+        for(let i = gridStep+0.5;i<totalH;i+=gridStep) {
+            ctx.beginPath()
+            ctx.moveTo(0,i)
+            ctx.lineTo(totalW,i)
+            ctx.stroke()
+        }
+        ctx.restore()
+    }
+
+   // 坐标转换
+   function windowToCanvas(x,y){
+        const cbox = canvas.getBoundingClientRect()
+        return {
+            x: x-cbox.left*(canvas.width/cbox.width),
+            y:y-cbox.top*(canvas.height/cbox.height)
+        }
+   }
+
+   // 保存绘图表面
+    function saveDrawingSurface(){
+        drawingImgData =  ctx.getImageData(0,0,canvas.width,canvas.height) // 复制画布上的像素数据
+    }
+
+    // 恢复绘图表面
+    function restoreDrawingSurface(){
+        ctx.putImageData(drawingImgData,0,0)
+    }
+
+    // 更新橡皮筋
+    function updateRubberband(loc,sides,startAngle){
+        // 更新矩形
+        updateRubberbandRectangle(loc)
+        // 更新线条
+        drawRubberbandShape(loc,sides,startAngle)
+    }
+
+    // 更新矩形边框
+    function updateRubberbandRectangle(loc){
+        rubberbandRect.width = loc.x - mouseDownObj.x
+        rubberbandRect.height = loc.y - mouseDownObj.y
+        rubberbandRect.left = Math.max(mouseDownObj.x,loc.x)
+        rubberbandRect.top = Math.max(mouseDownObj.y,loc.y)
+    }
+
+    // 准备绘制多边形
+    function drawRubberbandShape(loc,sides,startAngle){
+        ctx.fillStyle = 'rgba(0,0,0,0.1)'
+        const polygon = new Polygon(mouseDownObj.x,mouseDownObj.y,rubberbandRect.width,sides,startAngle,ctx.strokeStyle,ctx.fillStyle,true)
+        // 绘制多边形
+        drawPolygon(polygon)
+        if(!dragging) polygons.push(polygon)
+    }
+
+    // 绘制多边形
+    function drawPolygon(polygon){
+         ctx.beginPath()   
+         polygon.createPath()
+         polygon.stroke()
+         polygon.fill()
+    }
+
+    // 批量绘制多边形
+    function drawPolygons(){
+        polygons.forEach(polygon=>{
+            drawPolygon(polygon)
+        })
+    }
+
+    // 绘制矩形边框辅助线
+    function drawGuidewires(x,y){
+        ctx.strokeStyle = 'rgba(0,0,230.0.4)'
+        ctx.lineWidth = 0.5
+        // 画横线
+        drawHorizontalLine(y)
+        // 画竖线
+        drawVerticalLine(x)
+    }
+
+    // 画横线
+    function drawHorizontalLine(y){
+        ctx.beginPath()
+        ctx.moveTo(0,y+0.5)
+        ctx.lineTo(ctx.canvas.width,y+0.5)
+        ctx.stroke()
+    }
+
+    // 画竖线
+    function drawVerticalLine(x){
+        ctx.beginPath()
+        ctx.moveTo(x+0.5,0)
+        ctx.lineTo(x+0.5,ctx.canvas.height)
+        ctx.stroke()
+    }
+
+    // 开始拖动
+    function startDragging (loc){
+        saveDrawingSurface()
+        mouseDownObj.x = loc.x
+        mouseDownObj.y = loc.y
+    }
+
+    canvas.onmousedown = (e)=>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        if(mode === 'edit') {
+            console.log('鼠标按下');
+            // 保存已经绘制的图像
+            saveDrawingSurface()
+            mouseDownObj.x = loc.x;
+            mouseDownObj.y = loc.y;
+            dragging = true
+        }else{
+            // 标记开始拖动
+            polygons.forEach(polygon=>{
+                polygon.createPath()
+                if(ctx.isPointInPath(loc.x,loc.y)) {
+                    curPolygon = polygon
+                    dragOffsetX = loc.x - curPolygon.x
+                    dragOffsetY = loc.y - curPolygon.y
+                    console.log('开始拖动');
+                    return;
+                }
+            })
+        }
+    }
+
+    canvas.onmousemove=(e)=>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        if(dragging && mode === 'edit') {
+            // 恢复绘图表面
+            restoreDrawingSurface()
+            // 更新图形
+            updateRubberband(loc,6,0);
+            // 更新十字辅助线
+            drawGuidewires(loc.x,loc.y)
+        }else if(mode==='dragging' && curPolygon){
+            curPolygon.x = loc.x - dragOffsetX
+            curPolygon.y = loc.y - dragOffsetY
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 更新十字辅助线
+            drawGrid()
+            drawPolygons()
+        }
+    }
+
+    canvas.onmouseup = (e)=>{
+        if(mode==='edit'){
+            dragging = false
+            const loc = windowToCanvas(e.clientX,e.clientY)
+            // 恢复绘图表面
+            restoreDrawingSurface()
+            updateRubberband(loc,6,0)
+        }else{
+            curPolygon = null
+        }
+    }
+
+   drawGrid()
+   const change = document.getElementById('changemode')
+   change.onclick = () =>{
+       if(mode==='edit')mode = 'dragging'
+       else mode = 'edit'
+       
+   }
+
+</script>
+</html>
