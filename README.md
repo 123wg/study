@@ -63,7 +63,7 @@
 
     > 图像合成
         需要整理一下不同的值对应的效果
-        source-atop
+        source-atop --聚光效果
         source-in
         source-out
         source-over
@@ -71,7 +71,7 @@
         destination-in
         destination-out
         destination-over
-        lighter
+        lighter --放大镜效果
         copy
         xor
     > 高级路径操作

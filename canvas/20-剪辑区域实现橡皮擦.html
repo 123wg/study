@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!--
+- Copyright (C) 2012 David Geary. This code is from the book
+- Core HTML5 Canvas, published by Prentice-Hall in 2012.
+-
+- License:
+-
+- Permission is hereby granted, free of charge, to any person 
+- obtaining a copy of this software and associated documentation files
+- (the "Software"), to deal in the Software without restriction,
+- including without limitation the rights to use, copy, modify, merge,
+- publish, distribute, sublicense, and/or sell copies of the Software,
+- and to permit persons to whom the Software is furnished to do so,
+- subject to the following conditions:
+-
+- The above copyright notice and this permission notice shall be
+- included in all copies or substantial portions of the Software.
+-
+- The Software may not be used to create training material of any sort,
+- including courses, books, instructional videos, presentations, etc.
+- without the express written consent of David Geary.
+-
+- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+- OTHER DEALINGS IN THE SOFTWARE.
+-->
+
+<html>
+  <head>
+    <title>Erasing with the Clipping Region</title>
+
+    <style>
+      html,body {
+         /* background: #eeeeee; */
+         padding: 0;
+         margin: 0;
+         width: 100%;
+         height: 100%; 
+         display: flex;
+         justify-content: center;
+         align-items: center;
+      }
+      #canvas {
+         /* background: #ffffff; */
+         border: 1px solid red;
+      }
+    </style>
+  </head>
+
+   <body>
+       <div id="change">切换模式</div>
+      <canvas id='canvas' width='1500' height='800'>
+         Canvas not supported
+      </canvas>
+  </body>
+
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 当前所在的模式
+    let mode = 'editing'
+    // 是否正在拖动
+    let dragging = false
+    // 辅助矩形
+    let bindRectangle = {        }
+    // 鼠标按下记录对象
+    let mouseDownObj = {}
+    // 当前绘图表面
+    let inputImage = null
+    let lastX = 0
+    let lastY = 0
+    
+    // 剪辑区域 clip() 将剪辑区域设置为当前剪辑区域与当前路径的交集。在第一次调用clip()方法之前，剪辑区域的大小与整个canvas一致
+    // 利用剪辑区域实现橡皮擦效果
+    // 绘制辅助线
+    function drawGrid(){
+        ctx.save()
+        ctx.lineWidth = 0.5
+        ctx.fillStyle = '#ffffff'
+        ctx.strokeStyle='lightblue'
+        // 这里要先清空画布所有的内容 坑逼
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const step = 10
+        const width = canvas.width
+        const height = canvas.height
+        // 绘制横线
+        for(let i = 0.5;i<width;i+=step){
+            ctx.beginPath()
+            ctx.moveTo(0,i)    
+            ctx.lineTo(width,i)
+            ctx.stroke()
+        }
+        // 绘制竖线
+        for(let i = 0.5;i<width;i+=step){
+            ctx.beginPath()
+            ctx.moveTo(i,0)    
+            ctx.lineTo(i,height)
+            ctx.stroke()
+        }
+        ctx.restore()
+    }
+    
+    //坐标转换函数
+    function windowToCanvas(x,y){
+        const box = canvas.getBoundingClientRect()
+        return {
+            x:x-box.left*(canvas.width/box.width),
+            y:y-box.top*(canvas.height/box.height)
+        }
+    }
+
+    // 保存绘图表面
+    function saveDrawingSurface(){
+        inputImage =  ctx.getImageData(0,0,canvas.width,canvas.height)
+        return inputImage
+    }
+    // 恢复绘图表面
+    function restoreDrawingSurface(){
+       ctx.putImageData(inputImage,0,0) 
+    }
+
+    
+
+    // 更新橡皮圈对象
+    function updateRectangleBand(loc) {
+        bindRectangle.x = mouseDownObj.x
+        bindRectangle.y = mouseDownObj.y
+        bindRectangle.width = loc.x - mouseDownObj.x
+        bindRectangle.height = loc.y - mouseDownObj.y
+
+    }
+
+    // 绘制图像
+    function drawRubberBandShape(loc) {
+        // ctx.fillStyle = 'rgba(0,0,0,0.25)'
+        // ctx.strokeStyle = 'yellow'
+        ctx.beginPath()
+        ctx.arc(mouseDownObj.x,mouseDownObj.y,bindRectangle.width,0,Math.PI*2,false)
+        ctx.fill()
+        ctx.stroke()
+    }
+
+    // 绘制橡皮圈
+    function drawRubberBand(loc){
+        // 更新矩形对象
+        updateRectangleBand(loc)
+        drawRubberBandShape(loc)
+    }
+
+    // 更新跟随曲线
+    function updateGuidwires(x,y){
+        ctx.save()
+        ctx.strokeStyle = 'rgba(0,0,230,0.4)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath()
+        ctx.moveTo(x,0)
+        ctx.lineTo(x,canvas.height)
+        
+        ctx.moveTo(0,y)
+        ctx.lineTo(canvas.width,y)
+        ctx.stroke()
+        ctx.restore()
+    }
+
+    // 擦除剪辑区
+    function eraseLast(){
+        console.log(ctx.fillStyle);
+        console.log(ctx.strokeStyle);
+        ctx.save()
+        ctx.beginPath()
+        // ctx.lineWidth = 1
+        const radius = 20
+        ctx.arc(lastX,lastY,radius+1,0,Math.PI*2,false)
+        ctx.clip()
+        drawGrid()
+        ctx.restore()
+    }
+
+    // 绘制橡皮擦
+    function drawEraser(loc){
+        ctx.save()
+        // ctx.lineWidth = 1
+        ctx.beginPath()
+        const radius = 20
+        ctx.arc(loc.x,loc.y,radius,0,Math.PI*2,false)
+        ctx.clip()
+        ctx.stroke()
+        ctx.restore()
+    }
+
+    // 鼠标按下事件
+    canvas.onmousedown = (e)=>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        e.preventDefault(); // prevent cursor change
+        // 保存绘图表面
+        if(mode==='editing') saveDrawingSurface()
+        mouseDownObj.x = loc.x
+        mouseDownObj.y = loc.y
+        lastX = loc.x
+        lastY = loc.y
+        dragging = true
+    }
+
+    // 鼠标移动事件
+    canvas.onmousemove = (e)=>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        if(dragging) {
+            if(mode==='editing') {
+                restoreDrawingSurface()
+                // 更新橡皮圈
+                drawRubberBand(loc)
+                // 更新当前的跟随曲线
+                updateGuidwires(loc.x,loc.y)    
+            }else {
+                console.log('擦除裁剪区域');
+                // 擦除剪辑区
+                eraseLast()
+                // 绘制橡皮擦样式
+                drawEraser(loc)
+            }
+        }
+        lastX = loc.x
+        lastY = loc.y
+    }
+    // 鼠标抬起事件
+    canvas.onmouseup  = (e)=>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        // if(dragging){
+        if(mode==='editing') {
+            restoreDrawingSurface()
+            // 更新橡皮圈
+            drawRubberBand(loc)
+        }else {
+            // 擦除剪辑区
+            eraseLast(loc)
+        }   
+        dragging = false
+        // }
+    }
+    
+    ctx.strokeStyle = 'navy'
+    ctx.fillStyle = 'goldenrod'
+    drawGrid()
+
+    // 切换模式
+    const change = document.getElementById('change')
+    change.onclick = () =>{
+        if(mode==='editing') {
+            mode = 'easier'
+        }
+        else mode = 'editing'
+    }
+</script>
+</html>
