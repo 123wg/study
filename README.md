@@ -52,6 +52,28 @@
 
     > 绘制多边形    
         根据圆 获取多边形的定点坐标 绘制
+    > 坐标变换
+        translate(x,y) 平移坐标原点
+        scale(scaleXX,scaleY) 坐标系缩放
+        rotate(angle) 旋转坐标系 
+        transform(a,b,c,d,e,f) x轴缩放 x倾斜值(tan(angle)得来) y倾斜值 y缩放 x移动 y移动  效果是叠加的
+        setTransform(a,b,c,d,e,f) 先恢复到单位矩阵 然后在使用相同参数的transform效果 --注意旋转与错切公式的推导
+        resetTransform() 清空所有变换效果
+         [坐标旋转公式的推导]https://blog.csdn.net/qq_36424540/article/details/81347920
+
+    > 图像合成
+        需要整理一下不同的值对应的效果
+        source-atop
+        source-in
+        source-out
+        source-over
+        destination-atop
+        destination-in
+        destination-out
+        destination-over
+        lighter
+        copy
+        xor
     > 高级路径操作
     > 坐标变换
     > 图像合成
