@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    
+    
+    // 坐标转换
+    function windowToCanvas(x,y){
+        const box =  canvas.getBoundingClientRect()
+        return {
+            x:x-box.left*(canvas.width/box.width),
+            y:y-box.top*(canvas.height/box.height)
+        }
+    }
+    
+    // 绘制文本
+    function drawText(){
+        ctx.save()
+        ctx.shadowColor = 'rgba(100,100,150,0.8)'
+        ctx.shadowOffsetX = 5
+        ctx.shadowOffsetY = 5
+        ctx.shadowBlur = 10
+        ctx.fillStyle = 'cornflowerblue'
+        
+        ctx.fillText('HTML5',20,250)
+        ctx.strokeStyle = 'yellow'
+        ctx.strokeText('HTML5',20,250)
+        ctx.restore()
+    }
+    
+    ctx.lineWidth = 0.5
+    ctx.font = '128pt Comic-sans'
+    drawText()
+    // 鼠标悬浮事件
+    canvas.onmousemove = (e)=>{
+        console.log('鼠标移动');
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        drawText()
+        ctx.save()
+        // 当前图像合成的模式
+        ctx.globalCompositeOperation='source-atop';
+        ctx.beginPath()
+        ctx.arc(loc.x, loc.y,100, Math.PI / 180 * 0, Math.PI / 180 * 360);
+        ctx.fillStyle = 'orange'
+        ctx.stroke()
+        ctx.fill()
+        ctx.restore()
+    }
+</script>
+</html>
