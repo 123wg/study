@@ -32,10 +32,12 @@
 
     > 子路径
         beginPath() 会开启一段新的路径 会将当前路径中所有子路径清除掉
+
     > 线段
         moveTo(x,y)
         lineTo(x,y)
         线段与像素边界 如果在像素边界处绘制一条1像素宽的垂直线段，那么canvas的绘图环境会将1个像素拆成两半放在两个像素中
+
     > 线段端点与连接点
         lineCap-端点 默认为butt square矩形 round圆形
         lineJoin-连接点 默认为miter bevel直接连接 round 圆形连接
@@ -50,8 +52,9 @@
         quadraticCurveTo(cx,cy,x,y) 二次贝塞尔曲线 一个控制点和两个锚点  从上一点开始绘制一条二次曲线，到(x, y)为止，并且以(cx, cy)作为控制点
         bezierCurveTo(c1x,c1y,c2x,c2y,x,y) 三次贝塞尔曲线 
 
-    > 绘制多边形    
-        根据圆 获取多边形的定点坐标 绘制
+    > 绘制多边形
+        根据圆 获取多边形的顶点坐标 绘制
+
     > 坐标变换
         translate(x,y) 平移坐标原点
         scale(scaleXX,scaleY) 坐标系缩放
@@ -74,8 +77,9 @@
         lighter --放大镜效果
         copy
         xor
-    > 高级路径操作
-    > 坐标变换
-    > 图像合成
+
     > 剪辑区域
-        
+        clip() 将剪辑区域设置为当前剪辑区域与当前路径的交集,第一次调用时剪辑区域与画布大小相同
+# 第三章
+    
+    > 
