@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 1.绘制方法
+    // fillText(text,x,y) 填充文本
+    // strokeText(text,x,y) 文本描边
+    // 第四个可选参数 设置文本的最大宽度
+    
+    function shadowOn(){
+        ctx.shadowColor = 'rgba(0,0,0,0.25)'
+        ctx.shadowOffsetX = 5
+        ctx.shadowOffsetY = 5
+        ctx.shadowBlur = 20
+    }
+
+    function drawText(){
+        ctx.strokeStyle = 'blue'
+        ctx.fillText('HTML5',20,200,500)
+        ctx.strokeText('HTML5',20,200,500)
+    }
+
+    ctx.font = '128px Palatino'
+    ctx.fillStyle = 'cornflowerblue'
+    shadowOn()
+    drawText()
+
+
+    // 2.填充
+
+    // 绘制渐变色文本
+    function drawGradientText(){
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width/2, canvas.height);
+        gradient.addColorStop(0, '#ff80aa');
+        gradient.addColorStop(0.25, '#b266ff');
+        gradient.addColorStop(0.5, '#ff4d4d');
+        gradient.addColorStop(0.75, '#4dff4d');
+        gradient.addColorStop(1, '#33ffff');
+        ctx.fillStyle = gradient
+        ctx.fillText('HTML5',500,200)
+        ctx.strokeStyle = '#33ffff'
+        ctx.strokeText('HTML5',500,200)
+    }
+
+    // 绘制图案填充文本
+    function drawPatternText(){
+        return new Promise(resolve=>{
+            const img = new Image()
+            img.src = '../../img/333333.jpg'
+            img.onload = () =>{
+                const pattern = ctx.createPattern(img,'repeat-x')
+                ctx.fillStyle = pattern
+                ctx.fillText('HTML5',500,400)
+                resolve()
+            }
+        })
+    }
+
+    drawGradientText()
+    drawPatternText().then(()=>{
+
+        // 3.字形设置 font 必须按照
+        ctx.font = '50px helvetica'
+        ctx.fillText('HTML5',500,600)
+    })
+
+
+
+
+
+
+    
+    
+</script>
+</html>
