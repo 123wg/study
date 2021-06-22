@@ -115,5 +115,5 @@
         fillText(text,x,y) 填充文本
         strokeText(text,x,y) 文本描边
             1)第四个可选参数 设置文本的最大宽度
-        measureText(text)
+        measureText(text) 获取文本的宽度 需要先设置好font 根据字型计算宽度 不一定精确
 ```

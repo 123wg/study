@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 要绘制的文字
+    const textStr = '小伙现在开始旋转，转起来给我看看'
+    // 开始角度
+    const startAngle = - Math.PI/2 
+    const endAngle = Math.PI/2
+    const center = {
+        x:canvas.width/2,
+        y:canvas.height/2
+    }
+    const radius = 200
+    ctx.beginPath()
+    ctx.arc(center.x,center.y,10,0,Math.PI*2)
+    ctx.fill()
+
+    ctx.font = '30px Lucida Sans'
+    ctx.fillStyle = '#3399ff'
+    ctx.strokeStyle = '#b3ff99'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.lineWidth = 1
+    for(let i =0;i<textStr.length;i+=1){
+        const angle = startAngle + i*(endAngle - startAngle)/(textStr.length-1)
+        const textI = textStr[i]
+        const x = radius*Math.cos(angle)+center.x
+        const y = radius*Math.sin(angle)+center.y
+        ctx.save()
+
+        ctx.translate(x,y)
+        ctx.rotate(Math.PI/2 + angle)
+        // console.log(x,y);
+        ctx.resetTransform()
+        ctx.beginPath()
+        ctx.moveTo(x,y)
+        ctx.lineTo(center.x,center.y)
+        ctx.stroke()
+        ctx.restore()
+
+        ctx.save()        
+        ctx.beginPath()
+        ctx.translate(x,y)
+        // 这里为什么要旋转PI/2+angle 呢 因为文字数值方向的时候 旋转的角度应该是0度 但是起始角度为-PI/2
+        //  所以加上Math.PI/2 纠正旋转的角度
+        // 如果文字是逆向旋转的话就是PI/2 - angle
+        ctx.rotate(Math.PI/2 + angle)
+        ctx.fillText(textI,0,0)
+        ctx.restore()
+    }
+
+    
+</script>
+</html>

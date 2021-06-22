@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 绘制坐标轴
+    const axisMargin = 40
+    const verOrigin = {
+        x:axisMargin,
+        y:canvas.height-axisMargin
+    }
+    const originTop = axisMargin //顶部距离
+    const originRight = axisMargin // 右侧距离
+    
+    const tickWidth = 10 // 刻度线长度
+    const tickSpacing = 10 // 刻度线间距
+    // 横向刻度数量
+    const horTickAmount = (canvas.height - axisMargin - originTop)/tickSpacing
+    // 竖向刻度数量
+    const verTickAmount = (canvas.width - axisMargin - originRight)/tickSpacing
+    // 文本和轴线间距
+    const textMargin = 10
+
+    // 绘制坐标线条
+    function drawAixs(){
+        ctx.lineWidth = 0.5
+        ctx.strokeStyle = 'gray'
+        // 绘制x坐标
+        ctx.beginPath()
+        ctx.moveTo(verOrigin.x,verOrigin.y)
+        ctx.lineTo(canvas.width - originRight,verOrigin.y)
+        ctx.stroke()
+
+        // 绘制y坐标
+        ctx.beginPath()
+        ctx.moveTo(verOrigin.x,originTop)
+        ctx.lineTo(verOrigin.x,verOrigin.y)
+        ctx.stroke()
+    }
+
+    // 绘制刻度线
+    function drawTick(){
+        // 绘制横向坐标
+        for(let i = 1;i<horTickAmount;i+=1) {
+            let delta = tickWidth/2
+            if(i%5 === 0) delta = tickWidth
+            ctx.beginPath()
+            ctx.moveTo(axisMargin-delta,verOrigin.y - i*tickSpacing)
+            ctx.lineTo(axisMargin+delta,verOrigin.y - i*tickSpacing)
+            ctx.stroke()
+        }
+        // 绘制竖向坐标
+        for(let i = 1;i<verTickAmount;i+=1) {
+            let delta = tickWidth/2
+            if(i%5 === 0) delta = tickWidth
+            ctx.beginPath()
+            ctx.moveTo(verOrigin.x+i*tickSpacing,verOrigin.y-delta)
+            ctx.lineTo(verOrigin.x+i*tickSpacing,verOrigin.y+delta)
+            ctx.stroke()
+        }
+    }
+
+    // 绘制label文字
+    function drawLabel(){
+        ctx.font = '14px Arial'
+        ctx.fillStyle = 'red'
+        // 绘制横向文本
+        for(let i = 1;i<horTickAmount;i+=1) {
+            if(i%5 === 0){
+                const x = axisMargin - textMargin - tickWidth
+                const y = verOrigin.y - i*tickSpacing
+                ctx.textAlign = 'right'
+                ctx.textBaseline = 'middle'
+                ctx.fillText(i,x,y)
+
+            }
+        }
+        // 绘制竖向文本
+        for(let i = 1;i<verTickAmount;i+=1) {
+            if(i%5 === 0){
+                const x = verOrigin.x+i*tickSpacing
+                const y = verOrigin.y + tickWidth + textMargin
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'top'
+                ctx.fillText(i,x,y)
+            }
+        }
+    }
+    
+    drawAixs()
+    drawTick()
+    drawLabel()
+    
+</script>
+</html>
