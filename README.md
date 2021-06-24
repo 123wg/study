@@ -1,4 +1,4 @@
-# 第二章
+# 第二章 基本形状的绘制
 
 > 1.矩形
 ```
@@ -84,7 +84,8 @@
 
 > 13.图像合成
 ```
-    需要整理一下不同的值对应的效果
+    ctx.globalCompositeOperation 属性
+    <!-- 取值 -->
     source-atop --聚光效果
     source-in
     source-out
@@ -102,7 +103,7 @@
 ```
     clip() 将剪辑区域设置为当前剪辑区域与当前路径的交集,第一次调用时剪辑区域与画布大小相同
 ```
-# 第三章
+# 第三章 文本
     
 > 1.文本
 ```
@@ -117,3 +118,15 @@
             1)第四个可选参数 设置文本的最大宽度
         measureText(text) 获取文本的宽度 需要先设置好font 根据字型计算宽度 不一定精确
 ```
+
+# 第四章 图像与视频
+
+1.方法
+drawImage() 绘制图像 可以绘制图像 视频 canvas
+    - s代表原图像 d代表目标canvas
+    - drawImage(img,dx,dy) 绘制整幅图
+    - drawImage(img,dx,dy,dw,dh) 进行缩放
+    - drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh) 将一部分绘制并进行缩放
+getImage
+putImage
+createImageData

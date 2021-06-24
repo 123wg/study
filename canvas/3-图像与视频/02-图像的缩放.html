@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='600' height='400' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 将缩放后的图片放置在canvas中心
+    const w = canvas.width
+    const h = canvas.height
+    const scale = 2
+    const sw = canvas.width * 2
+    const sh = canvas.height * 2
+    const img = new Image()
+    img.src = '/img/22.png'
+    img.onload = () =>{
+        ctx.drawImage(img,-sw/2+w/2,-sh/2+h/2,sw,sh)
+
+        // canva坐标每秒秒钟向上平移1
+        setInterval(()=>{
+            // 清除的时候 起始坐标不是 0 0 证明canvas中可以将图像绘制在canvas之外
+            // 通过变换canvas的坐标 做背景滚动的效果
+            ctx.translate(0,0.5)
+            ctx.clearRect(-sw/2+w/2,-sh/2+h/2,sw,sh)
+            ctx.drawImage(img,-sw/2+w/2,-sh/2+h/2,sw,sh)
+        },200)
+    }
+    
+</script>
+</html>
