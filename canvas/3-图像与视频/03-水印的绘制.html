@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='800' height='500' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 为什么要使用离屏canvas 
+    // 如果只是缩放图片的话 只需要使用api将一部分缩放绘制就行 但是如果有水印的话 就不能单独控制图片了 要控制一个整体的canvas
+
+
+    // 绘制图片
+    // 绘制水印
+    // 缩放图片
+
+    // 离屏canvas
+    const  offCanvas = document.createElement('canvas')
+    offCanvas.width = 800
+    offCanvas.height = 500
+    const offCtx = offCanvas.getContext('2d')
+    const img = new Image()
+    img.src = '/img/lonelybeach.png'
+    
+    function drawWaterMaker(){
+        offCtx.fillStyle = '#1a75ff'
+        offCtx.strokeStyle = '#80ffff'
+        offCtx.font = '50px Arian'
+        // 总坐标中心坐标
+        const hMiddle = offCanvas.height/2
+        // 绘制第一行
+        const lineOne = 'hello!'
+        const oneW =  offCtx.measureText(lineOne).width
+        offCtx.fillText(lineOne,(offCanvas.width-oneW)/2,hMiddle - 50)
+        offCtx.strokeText(lineOne,(offCanvas.width-oneW)/2,hMiddle - 50)
+        
+        // 绘制第二行
+        const lineTwo = 'enjoy your summer'
+        const twoW =  offCtx.measureText(lineTwo).width
+        offCtx.fillText(lineTwo,(offCanvas.width-twoW)/2,hMiddle + 50)
+        offCtx.strokeText(lineTwo,(offCanvas.width-twoW)/2,hMiddle + 50)
+    }
+
+    // 绘制图片
+    img.onload = () =>{
+        offCtx.drawImage(img,0,0,offCanvas.width,offCanvas.height)
+        // 绘制水印
+        drawWaterMaker()
+        // 将图像放大两倍
+        const scale = 1.5
+        const w = canvas.width
+        const h = canvas.height
+        const scaleW = w*scale
+        const scaleH = h*scale
+        ctx.drawImage(offCanvas,0,0,offCanvas.width,offCanvas.height,-scaleW/2+w/2,-scaleH/2+h/2,scaleW,scaleH)
+    }
+
+    
+</script>
+</html>

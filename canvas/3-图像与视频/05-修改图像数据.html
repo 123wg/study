@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const mouseDownObj = {} // 鼠标按下的坐标
+    const rubberBandRect = {} // 橡皮圈的坐标
+    let imageData = null
+    let dragging = false
+    let copyImageData = ctx.createImageData(canvas.width,canvas.height)
+
+    // 绘制图像
+    const img = new Image()
+    img.src = '/img/3232.jpg'
+    img.onload = () =>{
+        ctx.drawImage(img,0,0,canvas.width,canvas.height)
+    }
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'yellow'
+
+    // 坐标转换
+    function windowToCanvas(x,y) {
+        const canvasBox = canvas.getBoundingClientRect()
+        return {
+            x: x-canvasBox.left,
+            y:y-canvasBox.top
+        }
+    }
+
+    function saveMouseDonw(loc){
+        mouseDownObj.x = loc.x
+        mouseDownObj.y = loc.y
+    }
+
+    function updateRubberBandRectangle(loc){
+        rubberBandRect.x =  Math.min(mouseDownObj.x,loc.x)
+        rubberBandRect.y = Math.min(mouseDownObj.y,loc.y)
+        rubberBandRect.width = Math.abs(loc.x - mouseDownObj.x)
+        rubberBandRect.height = Math.abs(loc.y - mouseDownObj.y)
+    }
+
+    // 1.持续调用getImageData 可能会成为性能瓶颈
+    function getImageData(){
+        imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+    }
+
+    // 绘制橡皮圈
+    function drawRubberBand(){
+        ctx.strokeRect(rubberBandRect.x+ctx.lineWidth,rubberBandRect.y+ctx.lineWidth,rubberBandRect.width-2*ctx.lineWidth,rubberBandRect.height-2*ctx.lineWidth)
+    }
+
+    // 恢复像素数据
+    function restoreImageData(){
+        let deviceWidthOverCSSPixels = imageData.width / canvas.width,
+         deviceHeightOverCSSPixels = imageData.height / canvas.height;
+         ctx.putImageData(imageData,0,0)
+        ctx.putImageData(copyImageData,0,0,
+        rubberBandRect.x*deviceWidthOverCSSPixels,
+        rubberBandRect.y*deviceHeightOverCSSPixels,
+        rubberBandRect.width*deviceWidthOverCSSPixels,
+        rubberBandRect.height*deviceHeightOverCSSPixels
+        );
+    }
+
+    function startCopyImageData(){
+        for(let i=0;i<3;i++) {
+            copyImageData.data[i] = imageData.data[i]
+        }
+
+        for(let i = 3;i<imageData.data.length-4;i+=4) {
+            copyImageData.data[i] = imageData.data[i]/1.2
+            copyImageData.data[i+1] = imageData.data[i+1]/3.6
+            copyImageData.data[i+2] = imageData.data[i+2]
+            copyImageData.data[i+3] = imageData.data[i+3]
+        }
+    }
+
+    // 绑定事件
+    canvas.onmousedown = (e) =>{
+        const loc = windowToCanvas(e.clientX,e.clientY)
+        rubberBandRect.x = loc.x
+        rubberBandRect.y = loc.y
+        rubberBandRect.width = 0
+        rubberBandRect.height = 0
+        saveMouseDonw(loc)
+        getImageData()  // 获取像素信息
+        // 复制图像数据到拷贝对象中
+        startCopyImageData()
+        dragging = true
+    }
+
+    canvas.onmousemove = (e)=>{
+        if(dragging) {
+            loc = windowToCanvas(e.clientX,e.clientY)
+            if(rubberBandRect.width> 2*ctx.lineWidth && rubberBandRect.height>2*ctx.lineWidth) {
+                if(imageData) restoreImageData()
+            }
+            updateRubberBandRectangle(loc)// 获取矩形的坐标信息
+            if(rubberBandRect.width> 2*ctx.lineWidth && rubberBandRect.height>2*ctx.lineWidth){
+                // 绘制橡皮圈
+                drawRubberBand()
+            }
+            
+        }
+    }
+
+    canvas.onmouseup = () =>{
+        ctx.putImageData(imageData,0,0)
+        ctx.drawImage(canvas,rubberBandRect.x+2*ctx.lineWidth,rubberBandRect.y+2*ctx.lineWidth,rubberBandRect.width-4*ctx.lineWidth,rubberBandRect.height-4*ctx.lineWidth,0,0,canvas.width,canvas.height)
+        dragging = false
+        imageData = null
+    }
+</script>
+</html>

@@ -127,6 +127,13 @@ drawImage() 绘制图像 可以绘制图像 视频 canvas
     - drawImage(img,dx,dy) 绘制整幅图
     - drawImage(img,dx,dy,dw,dh) 进行缩放
     - drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh) 将一部分绘制并进行缩放
-getImage
-putImage
-createImageData
+getImage(sx,sy,sw,sh) 获取图像的像素信息
+    -返回imageData对象的属性
+     - width以设备像素为单位的图像数据宽度
+     - height以设备像素为单位的图像数据高度
+     - data 包含各个设备像素数值的数组
+putImage(imgData,dx,dy,dirtyX,dirtyY,dirtyW,dirtyH)
+    - dx,dy 绘制的图像距离canvas的偏移量
+    - dirtyX,dirtyY,dirtyW,dirtyH 以设备像素比为单位   设备像素比为imgData.width/canvas.width  使用时需要将自己设置的单位*(canvas.width/imgData.width)转换为在canvas中的单位
+createImageData(w,h) 
+    - 创建imageData对象 单位是css像素
