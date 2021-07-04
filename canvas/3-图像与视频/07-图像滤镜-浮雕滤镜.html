@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    // 3.浮雕滤镜(不计算alpha属性)使用边缘检测技术使位于边界的像素灰度更浓 需要用到右侧和下方的像素值
+    // 缺点 并未考虑最后一行像素和最后一列像素 因为它们的右侧和下方没有像素数据了
+    const img = new Image()
+    img.src = '../../img/333.png'
+    // img.onload = () =>{
+    //     ctx.drawImage(img,0,0,canvas.width,canvas.height)
+    //     const imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
+    //     console.log(imgData);
+    //     let data = imgData.data
+    //     let leng = data.length
+    //     let width = imgData.width
+    //     for(let i = 0;i<leng;i+=1){
+    //        data[i] = 255/2+2*data[i]-data[i+4]-data[i+width*4]
+    //     }
+    //     ctx.putImageData(imgData,0,0)
+    // }
+
+
+    // 4.浮雕滤镜 -考虑边界的情况
+    img.onload = () =>{
+        ctx.drawImage(img,0,0,canvas.width,canvas.height)
+        const imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
+        const width = imgData.width
+        let data = imgData.data
+        let len = data.length
+
+        for(let i=0;i<len;i+=1) {
+            // 如果不是最后一行
+            if(i<len - width*4) {
+                // 不是alpha通道
+                if((i+1)/4!==0) {
+                    // 最后一列
+                    if((i+4)%(width*4)===0) {
+                        console.log(i);
+                        data[i] = data[i-4]
+                        data[i+1] = data[i-3]
+                        data[i+2] = data[i-2]
+                        data[i+3] = data[i-1]
+                        i+=4
+                    }else{
+                        data[i] = 255/2+2*data[i]-data[i+4]-data[i+width*4]
+                    }
+                }
+            }else{
+                if((i+1)%4!==0){
+                    data[i] = data[i-4*width]
+                }
+            }
+            // 是最后一行
+        }
+        ctx.putImageData(imgData,0,0)
+    }
+</script>
+</html>
