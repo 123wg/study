@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    const offCanvas = document.createElement('canvas')
+    offCanvas.width = canvas.width
+    offCanvas.height = canvas.height
+    offCtx = offCanvas.getContext('2d')
+
+    const img = new Image()
+    img.src = '../../img/3232.jpg'
+    img.onload = () =>{
+        ctx.drawImage(img,0,0,canvas.width,canvas.height)
+        const imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
+        const glassFilter = new Worker('./webWorker/glassFilter.js')
+        glassFilter.postMessage(imgData)
+        glassFilter.onmessage = (event)=>{
+            offCtx.putImageData(event.data,0,0)
+            // 绘制眼镜
+            drawGlass()
+            // 绘制连接线
+            drawWire()
+            // 绘制连接点 
+            drawConnector()
+        }
+    }
+
+    const center = {
+        x:canvas.width/2,
+        y:canvas.height/2
+    }
+
+    const glassRadius = 200
+    const margin = 100
+    const leftCenter = {
+        x:center.x - glassRadius - margin,
+        y:center.y
+    }
+
+    const rightCenter = {
+        x:center.x + glassRadius + margin,
+        y:center.y
+    }
+
+    function drawGlass(){
+        ctx.strokeStyle = '#d6d6c2'
+        ctx.save()
+        ctx.beginPath()
+        // 绘制左边的圆
+        // ctx.moveTo(leftCenter.x,leftCenter.y)
+        ctx.arc(leftCenter.x,leftCenter.y,glassRadius,0,Math.PI*2,false)
+        ctx.stroke()
+        ctx.moveTo(rightCenter.x,rightCenter.y)
+        ctx.arc(rightCenter.x,rightCenter.y,glassRadius,0,Math.PI*2,true)
+        ctx.stroke()
+        ctx.clip()
+        ctx.drawImage(offCanvas,0,0,canvas.width,canvas.height)
+        ctx.restore()
+    }
+
+    // 绘制连接线
+    function drawWire(){
+        ctx.strokeStyle = '#4dd2ff'
+        ctx.beginPath()
+        ctx.moveTo(center.x - glassRadius/4-margin,center.y - glassRadius/4)
+        ctx.quadraticCurveTo(center.x, center.y-200, center.x + glassRadius/4+margin,center.y - glassRadius/4);
+        ctx.stroke()
+    }
+
+    function drawConnector(){
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+        ctx.fillStyle = 'silver'
+        const connectRadius = 5
+        ctx.beginPath()
+        ctx.arc(center.x - glassRadius/4-margin,center.y - glassRadius/4,connectRadius,0,Math.PI*2)
+        ctx.stroke()
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(center.x + glassRadius/4+margin,center.y - glassRadius/4,connectRadius,0,Math.PI*2)
+        ctx.stroke()
+        ctx.fill()
+    }
+    
+</script>
+</html>
