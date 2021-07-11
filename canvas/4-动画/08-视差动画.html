@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1600' height='800' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    const skyImg = new Image()
+    let skyVelocity = 3
+    let skyOffset = 0
+    
+    const tree1Img = new Image()
+    let tree1Velocity = 8
+    let tree1Offset = 0
+    
+    const tree2Img = new Image()
+    let tree2Velocity = 28
+     let tree2Offset = 0
+
+    const grass1Img = new Image()
+    let grass1Velocity = 40
+    let grass1Offset = 0
+
+    const grass2Img = new Image()
+    const grass2Velocity = 60
+    let grass2Offset = 0
+
+    let fps = 0
+    let lastTime =+ new Date()
+
+
+    tree1Img.src = '/img/tree1.png'
+    tree2Img.src = '/img/tree2.png'
+    grass1Img.src = '/img/grass1.png'
+    grass2Img.src = '/img/grass2.png'
+    skyImg.src = '/img/sky.png'
+
+    function draw() {
+        skyOffset = skyOffset>canvas.width?0:skyOffset+skyVelocity/fps
+        tree1Offset = tree1Offset>canvas.width?0:tree1Offset+tree1Velocity/fps
+        tree2Offset = tree2Offset>canvas.width?0:tree2Offset+tree2Velocity/fps
+        grass1Offset = grass1Offset>canvas.width?0:grass1Offset+grass1Velocity/fps
+        grass2Offset = grass2Offset>canvas.width?0:grass2Offset+grass2Velocity/fps        
+
+        ctx.save()
+        ctx.translate(-skyOffset,0)
+        ctx.drawImage(skyImg,0,0,canvas.width,canvas.height)
+        ctx.drawImage(skyImg,canvas.width-2,0,canvas.width,canvas.height)
+        ctx.restore()
+
+        ctx.save()
+        ctx.translate(-tree1Offset,0)
+        ctx.drawImage(tree1Img,100,500)
+        ctx.drawImage(tree1Img,1500,500)
+        ctx.drawImage(tree1Img,600,500)
+        ctx.drawImage(tree1Img,1600,500)
+        ctx.drawImage(tree1Img,1100,500)
+        ctx.drawImage(tree1Img,1800,500)
+        ctx.restore()
+
+        ctx.save()
+        ctx.translate(-tree2Offset,0)
+        ctx.drawImage(tree2Img,250,500)
+        ctx.drawImage(tree2Img,1250,500)
+        ctx.drawImage(tree2Img,800,500)
+        ctx.drawImage(tree2Img,1800,500)
+        ctx.restore()
+
+        ctx.save()
+        ctx.translate(-grass1Offset,0)
+        ctx.drawImage(grass1Img,0,canvas.height - grass1Img.height,canvas.width,grass1Img.height)
+        ctx.drawImage(grass1Img,canvas.width,canvas.height - grass1Img.height,canvas.width,grass1Img.height)
+        ctx.restore()
+
+        ctx.save()
+        ctx.translate(-grass2Offset,0)
+        ctx.drawImage(grass2Img,0,canvas.height - grass2Img.height,canvas.width,grass2Img.height)
+        ctx.drawImage(grass2Img,canvas.width,canvas.height - grass2Img.height,canvas.width,grass2Img.height)
+        ctx.restore()
+    }
+
+    function calcuteFps(time){
+        fps = 1000/(time-lastTime)
+        lastTime = time
+        return fps
+    }
+
+    function animate() {
+        const time =+ new Date()
+        fps = calcuteFps(time)
+        draw()
+        window.requestAnimationFrame(animate)
+    }
+
+    skyImg.onload = () =>{
+        window.requestAnimationFrame(animate)
+    }
+
+</script>
+</html>

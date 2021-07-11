@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./Sprite.js"></script>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    const ball = new Sprite('ball',{
+        paint:function(sprite,ctx){
+            ctx.beginPath()
+            ctx.arc(sprite.left+sprite.width/2,sprite.top+sprite.height/2,70,0,Math.PI*2)
+            ctx.clip()
+            ctx.shadowColor = 'rgb(0,0,0)'
+            ctx.shadowOffsetX = -4
+            ctx.shadowOffsetY = -4
+            ctx.shadowBlur = 8
+
+            ctx.lineWidth = 2
+            ctx.strokeStyle = 'rgb(100,100,195)'
+            ctx.fillStyle = 'rgba(30,144,255,0.15)'
+            ctx.fill()
+            ctx.stroke()
+        }
+    })
+    ball.top = canvas.height/2
+    ball.left = canvas.width/2
+    ball.paint(ctx)
+    console.log(ball);
+</script>
+</html>
