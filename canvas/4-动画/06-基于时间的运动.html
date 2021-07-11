@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // 帧速率(每秒播放的帧数) = 1000 / (时间差)
+    // 基于时间的运动 每秒移动的像素数相等
+    // 像素 = 速度(像素/秒) * 时间 (两帧的时间差)
+    // 可以通过 devtools 调低cpu速度查看测试结果
+    const circleList = [
+        {
+            x: 300,
+            y:100,
+            radius:25,
+            disx:-12,
+            disy:15,
+            innerColor:'rgba(255, 153, 51,0.5)',
+            middleColor:'rgba(255, 77, 255,0.5)',
+            outerColor:'rgba(255, 153, 102,0.5)',
+            strokeColor:'rgba(242, 158, 5,0.8)'
+        },
+        {
+            x: 500,
+            y:500,
+            radius:25,
+            disx:12,
+            disy:25,
+            innerColor:'rgba(128, 255, 0,0.5)',
+            middleColor:'rgba(102, 255, 153,0.5)',
+            outerColor:'rgba(51, 153, 51,0.5)',
+            strokeColor:'rgba(242, 158, 5,0.8)'
+        },
+        {
+            x:1000,
+            y:700,
+            radius:25,
+            disx:23,
+            disy:-12,
+            innerColor:'rgba(255, 102, 153,0.5)',
+            middleColor:'rgba(255, 102, 0,0.5)',
+            outerColor:'rgba(255, 0, 255,0.5)',
+            strokeColor:'rgba(242, 158, 5,0.8)'
+        },
+    ]
+    const circleLen = circleList.length
+    // 绘制背景
+    function drawBackground(){
+        // 绘制横线
+        const width = canvas.width
+        const height = canvas.height
+        const interval = 10
+        ctx.lineWidth = 0.5
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+        for(let i = 0.5;i<width;i+=interval) {
+            ctx.beginPath()
+            ctx.moveTo(i,0)
+            ctx.lineTo(i,height)
+            ctx.stroke()
+        }
+
+        for(let i = 0.5;i<height;i+=interval) {
+            ctx.beginPath()
+            ctx.moveTo(0,i)
+            ctx.lineTo(width,i)
+            ctx.stroke()
+        }
+        // 绘制竖线
+    }
+    // 变化
+    let lastTimes =+ new Date()
+    function update(time){
+        const interValTime = time - lastTimes
+        for(let i = 0;i<circleLen;i+=1) {
+            const circle = circleList[i]
+            
+            if(circle.x + circle.radius >= canvas.width || 
+            circle.x-circle.radius <= 0){
+                circle.disx = -circle.disx
+            }
+            if(circle.y + circle.radius >= canvas.height || 
+            circle.y - circle.radius <= 0){
+                circle.disy = -circle.disy
+            }
+            circle.x += circle.disx/1000 * interValTime
+            circle.y += circle.disy/1000 * interValTime
+        }
+        lastTimes = time
+    }
+    // 重新绘制
+    function draw(){
+        ctx.save()
+        for(let i = 0;i<circleLen;i+=1) {
+            const circle = circleList[i]
+            ctx.beginPath()
+            const gradient = ctx.createRadialGradient(circle.x,circle.y,0,circle.x,circle.y,circle.radius)
+            gradient.addColorStop(0.3,circle.innerColor)
+            gradient.addColorStop(0.5,circle.middleColor)
+            gradient.addColorStop(1,circle.outerColor)
+            ctx.fillStyle = gradient
+            ctx.strokeStyle = circle.strokeColor
+            ctx.arc(circle.x,circle.y,circle.radius,0,Math.PI*2)
+            ctx.fill()
+            ctx.stroke()
+        }
+        ctx.restore()
+    }
+
+    // 帧速率的计算 每秒绘制多少帧 1000/两次绘制的时间差
+
+    let lastTime = 0
+    let now =+ new Date()
+    function calculateFps(){
+        now =+ new Date()
+        const fps = 1000 / (now - lastTime)
+        lastTime = now
+        return fps
+    }
+    let preUpdateTime = 0
+    let preFps = 0
+    function animate(){
+        let fps = 0
+        fps = calculateFps()
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+
+        if(now - preUpdateTime >= 500) {
+            preUpdateTime = now
+            preFps = fps
+        }
+        ctx.font = '30px arial'
+        ctx.fillStyle = 'cornflowerblue'
+        ctx.fillText('FPS:'+preFps.toFixed(),10,30)
+
+        drawBackground()
+
+        const time =+ new Date()
+        update(time)
+        draw()
+        window.requestAnimationFrame(animate)
+    }
+    window.requestAnimationFrame(animate)
+</script>
+</html>
