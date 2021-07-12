@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./Sprite.js"></script>
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    /**
+     * 精灵绘制器
+     * 1.描边及填充绘制器
+     * 2.图像绘制器
+     * 3.精灵表绘制器
+     */
+    // 精灵将绘制的操作交给一个绘制对象完成 本质上就是一些绘制的算法 这是策略模式的一种使用场景
+    
+    const ballPainter = {
+        // 绘制圆
+        paint:function(sprite,context){
+            // 坐标、半径、描边、填充、阴影
+            context.save()
+            const x = sprite.left+sprite.width/2
+            const y = sprite.top+sprite.height/2
+            const radius = sprite.width/2
+
+            context.beginPath()
+            context.arc(x,y,radius,0,Math.PI*2,false)
+            ctx.fillStyle = 'rgba(0,0,0)'
+            ctx.fill()
+
+            ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+            context.stroke()
+            context.restore()
+        }
+    }
+    
+    const ball = new Sprite('ball',ballPainter)
+
+    // 绘制背景
+    function drawBc(){
+        const width = canvas.width
+        const height = canvas.height
+        ctx.lineWidth = 0.5
+
+        for(let i = 0.5;i<width;i+=1){
+            ctx.moveTo()
+            ctx.lineTo()
+            ctx.stroke()
+        }        
+
+        for(let i = 0.5;i<width;i+=1){
+            ctx.moveTo()
+            ctx.lineTo()
+            ctx.stroke()
+        }
+    }
+
+
+    // 外圈的半径
+    const outerRadius = canvas.height/2 - 30
+    // 绘制外圈
+    function drawCLickFace(){
+        ctx.lineWidth = 0.5
+        ctx.beginPath()
+        ctx.arc(canvas.width/2,canvas.height/2, outerRadius,0,Math.PI*2)
+        ctx.stroke()
+    }
+
+    // 绘制时分秒帧的方法
+    function drawHand(loc){
+        
+        // 根据时间生成终点 根据终点生成 坐标
+        // 先计算角度
+        const angle = (Math.PI*2) *(loc/60) - Math.PI/2
+        
+        ball.left = canvas.width/2+Math.cos(angle)*outerRadius-ball.width/2;
+        ball.top = canvas.height/2+Math.sin(angle)*outerRadius - ball.height/2;
+        // 绘制直线
+        ctx.beginPath()
+        ctx.moveTo(canvas.width/2,canvas.height/2)
+        ctx.lineTo(canvas.width/2+Math.cos(angle)*(outerRadius-ball.width/2),canvas.height/2+Math.sin(angle)*(outerRadius - ball.height/2))
+        
+        
+        ctx.stroke()
+        ball.paint(ctx)
+    }
+
+    // 绘制时分秒指针和圆圈
+    function drawHands(){
+        // 获取当前时间
+        const now = new Date()
+
+        // 绘制秒针和小球
+        const seconds =  now.getSeconds();
+        
+        ball.width = 10;
+        ball.height = 10;
+        drawHand(seconds)
+
+        // 绘制分针和小球
+        const minutes = time = now.getMinutes();
+        
+        ball.width = 15;
+        ball.height = 15;
+        drawHand(minutes)
+
+        // 绘制时针和小球 
+        const mhour = now.getHours()>12?now.getHours()-12:now.getHours();
+        const hour = mhour*5+(minutes/60)*5
+        
+        ball.width = 20;
+        ball.height = 20;
+        drawHand(hour)
+        
+
+        // 绘制中间的圆
+        
+        ball.width = 6;
+        ball.height = 6;
+        ball.left = canvas.width/2 - ball.width/2;
+        ball.top = canvas.height/2 - ball.height/2;
+        ballPainter.paint(ball,ctx)
+        
+    }
+
+    function animate(){
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        drawCLickFace()
+        drawHands()
+        window.requestAnimationFrame(animate)
+    }
+    window.requestAnimationFrame(animate)
+</script>
+</html>
