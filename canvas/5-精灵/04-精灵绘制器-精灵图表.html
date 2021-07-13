@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./Sprite.js"></script>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // 精灵图表绘制器 雪碧图
+    // 使用方法 图表绘制器 每次更新的时候 找到对应区域的图像 绘制到canvas 中
+    const SpriteSheetPainter = function(cells){
+        this.cells = cells || []
+        this.cellIndex  = 0
+    }
+
+    SpriteSheetPainter.prototype = {
+        advance:function(){ // 更新下一帧使用的图片
+            if(this.cellIndex === this.cells.length-1){
+                this.cellIndex = 0
+            }else{
+                this.cellIndex+=1
+            }
+        },
+        paint:function(sprite,context) {
+            const cell = this.cells[this.cellIndex]
+            ctx.drawImage(sheetImg,cell.x,cell.y,cell.w,cell.h,sprite.left,sprite.top,cell.w,cell.h)
+        }
+    }
+
+    // 先将精灵图绘制到画布上
+    // 准备精灵图表初始化数据
+    // 绘制精灵表
+    // 播放动画 动起来
+    const cells = [
+        {x:0,y:0,w:47,h:64},
+        {x:55,y:0,w:44,h:64},
+        {x:107,y:0,w:39,h:64},
+        {x:150,y:0,w:46,h:64},
+        {x:208,y:0,w:49,h:64},
+        {x:265,y:0,w:46,h:64},
+        {x:320,y:0,w:42,h:64},
+        {x:380,y:0,w:35,h:64},
+        {x:425,y:0,w:35,h:64},
+    ]
+
+    const spriteSheet = new Sprite('spriteSheet', new SpriteSheetPainter(cells))
+    spriteSheet.left = 500
+    spriteSheet.top = 300
+
+    let advance = 0
+    function animate(time){
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        ctx.drawImage(sheetImg,0,0)
+        spriteSheet.paint(ctx)
+        // 前进
+        if(time-advance > 100) {
+            spriteSheet.painter.advance()
+            advance = time
+        }
+        window.requestAnimationFrame(animate)
+    }
+
+    const sheetImg = new Image()
+    sheetImg.src = '/img/running-sprite-sheet.png'
+    sheetImg.onload = () =>{
+        ctx.drawImage(sheetImg,0,0)
+        window.requestAnimationFrame(animate)
+    }
+</script>
+</html>
