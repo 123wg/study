@@ -43,3 +43,4 @@ StopWatch.prototype = {
     }
 
 }
+export default StopWatch

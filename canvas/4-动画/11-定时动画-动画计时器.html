@@ -41,35 +41,30 @@
         <button id="start" type="button" value="start">start</button>
     </div>
     <script type="module">
-        import StopWatch from './StopWatch.mjs'
-        // const canvas = document.getElementById('canvas')
-        // const ctx = canvas.getContext('2d')
-    
-        // 前面接触的动画都是连续的，但是许多动画只需要在某个时间段内运行
-        // 引入秒表的概念 可以开始、停止、查看运行时间、重置、判断是否在运行
-    
-        // FIXME 需要补充绘制秒表的逻辑 现在只写对象 -- 为了先研究精灵的行为一节
-        const stopWatch = new StopWatch()
-        console.log(stopWatch);
+        import AnimationTimer from './AnimationTimer.mjs'
+        // 对秒表封装 --专门用来控制动画的播放 增加isOver方法
+     
+        
+        let animationTimer = null
         // 实现秒表
         const input = document.getElementById('input')
         const start = document.getElementById('start')
-        let setSeconds = 10
         start.onclick = () =>{
             const value = start.value
             if(value === 'start'){
-                console.log('进来');
+                const dura = input.value
+                animationTimer = new AnimationTimer(+new Date + dura*1000)
+                console.log(animationTimer);
                 // 秒表开始
-                stopWatch.start()
+                animationTimer.start()
                 start.value = 'stop'
                 start.innerHTML = 'stop'
                 input.disabled = true
-                setSeconds = input.value
                 // 开始执行动画
                 window.requestAnimationFrame(animate)
             }else{
                 // 秒表停止
-                stopWatch.stop()
+                animationTimer.stop()
                 start.value = 'start'
                 start.innerHTML = 'start'
             }
@@ -78,18 +73,17 @@
         function animate() {
             // 如果秒表在运行
             // 停止运行
-            if(stopWatch.isRunning() && stopWatch.getElapsedTime() > setSeconds*1000){
-                stopWatch.stop()
+            if(animationTimer.isRunning() && animationTimer.isOver()){
+                animationTimer.stop()
                 start.value = 'start'
                 start.innerHTML = 'start'
                 input.value = 0
             }
-            if(stopWatch.isRunning()){
+            if(animationTimer.isRunning()){
                 console.log('正在执行动画');
                 window.requestAnimationFrame(animate)
             }
         }
-    
         
     </script>
 </body>
