@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./StopWatch.js"></script>
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+        #input {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+        }
+        #start{
+            position: absolute;
+            top: 50px;
+            left: 200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1200' height='900' id="canvas"></canvas>
+    <div>
+        <input id="input" type="number" value="" name="number"/>
+    </div>
+    <div>
+        <button id="start" type="button" value="start">start</button>
+    </div>
+    
+</body>
+<script>
+    // const canvas = document.getElementById('canvas')
+    // const ctx = canvas.getContext('2d')
+
+    // 前面接触的动画都是连续的，但是许多动画只需要在某个时间段内运行
+    // 引入秒表的概念 可以开始、停止、查看运行时间、重置、判断是否在运行
+
+    // FIXME 需要补充绘制秒表的逻辑 现在只写对象 -- 为了先研究精灵的行为一节
+    
+    const stopWatch = new StopWatch()
+
+    // 实现秒表
+    const input = document.getElementById('input')
+    const start = document.getElementById('start')
+    let setSeconds = 10
+    start.onclick = () =>{
+        const value = start.value
+        if(value === 'start'){
+            console.log('进来');
+            // 秒表开始
+            stopWatch.start()
+            start.value = 'stop'
+            start.innerHTML = 'stop'
+            input.disabled = true
+            setSeconds = input.value
+            // 开始执行动画
+            window.requestAnimationFrame(animate)
+        }else{
+            // 秒表停止
+            stopWatch.end()
+            start.value = 'start'
+            start.innerHTML = 'start'
+        }
+    }
+
+    function animate() {
+        // 如果秒表在运行
+        // 停止运行
+        if(stopWatch.isRunning() && stopWatch.getElapsedTime() > setSeconds*1000){
+            stopWatch.stop()
+            start.value = 'start'
+            start.innerHTML = 'start'
+            input.value = 0
+        }
+        if(stopWatch.isRunning()){
+            console.log('正在执行动画');
+            window.requestAnimationFrame(animate)
+        }
+    }
+
+    
+</script>
+</html>
