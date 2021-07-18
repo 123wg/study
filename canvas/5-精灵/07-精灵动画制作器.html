@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./Sprite.js"></script>
+    <script src="./SpriteAnimator.js"></script>
+    <script src="./ImagePainter.js"></script>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    const bombPainter = new ImgPainter('/img/bomb-no-fuse.png')
+    // 绘制一个炸弹爆炸的动画
+    const bomb = new Sprite('bomb',bombPainter)
+    bomb.left = 100
+    bomb.top = 100
+    bomb.width = 180
+    bomb.height = 130
+
+    // 炸弹燃烧数量
+    const fuseNum = 9
+    const explosionNum = 9
+    // 爆炸图片数量
+
+    const fuseBurnPainters = []
+    const explosionPainters = []
+    // 构造炸弹绘制器数组
+    for(let i = 0;i < fuseNum-1;i+=1) {
+        fuseBurnPainters.push(new ImgPainter('/img/fuse-0'+i+'.png'))
+    }
+    // 构造爆炸绘制器数组
+    for(let i = 0;i < explosionNum-1;i+=1) {
+        explosionPainters.push(new ImgPainter('/img/explosion-0'+i+'.png'))
+    }
+
+    // 初始化动画绘制器
+    const fuseBurnAnimatior = new SpriteAnimator(fuseBurnPainters,()=>{
+        bomb.painter = bombPainter
+    })
+    const explosionAnimatior = new SpriteAnimator(explosionPainters,()=>{
+        console.log('执行回调');
+        bomb.painter = bombPainter
+    })
+    
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        bomb.paint(ctx)
+        window.requestAnimationFrame(animate)
+    }
+    window.requestAnimationFrame(animate)
+
+    const cycle = () =>{
+        // 开始的时候 使用第一个默认的绘制器    
+        fuseBurnAnimatior.start(bomb,1000)
+        // 两秒以后改变为爆炸的绘制器
+        setTimeout(()=>{
+            explosionAnimatior.start(bomb,1000)
+        },1000)
+    }
+    cycle()
+    setInterval(()=>{
+        cycle()
+    },2100)
+   
+</script>
+</html>

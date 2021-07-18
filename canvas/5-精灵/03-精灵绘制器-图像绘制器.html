@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="./Sprite.js"></script>
+    <script src="./ImagePainter.js"></script>
     <style>
         html,body{
             margin: 0;
@@ -29,20 +30,9 @@
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
     
-    // 图像绘制器
-    const imgPainter = function(imgUrl) {
-        this.image = new Image()
-        this.image.src = imgUrl
-    }
-    imgPainter.prototype = {
-        paint:function(sprite,context) {
-            if(this.image.complete) {
-                context.drawImage(this.image,sprite.left,sprite.top,sprite.width,sprite.height)
-            }
-        }
-    }
 
-    const bomb = new Sprite('img',new imgPainter('/img/11.png'))
+
+    const bomb = new Sprite('img',new ImgPainter('/img/11.png'))
     
     function animate() {
         ctx.clearRect(0,0,canvas.width,canvas.height)

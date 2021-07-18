@@ -24,7 +24,7 @@ var Sprite = function(name,painter,behaviors){
     this.velocityX = 0 // 水平方向速度
     this.velocityY = 0
     this.visible = true
-    this.animating = false
+    this.animating = false // 是否正在执行动画 后面的精灵动画制作器中会用到
     this.behaviors = behaviors || []
     return this
 }
