@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../5-精灵/Sprite.js"></script>
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            /* border: 1px solid red; */
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script type="module">
+    import AnimationTimer from '../4-动画//AnimationTimer.mjs'
+
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // 需要了解斜抛运动的公式 vx = v0*Math.cos(a) vy = v0.sin(a) - gt
+
+    // 参数初始化
+    const marginSides = 180 // 距离左右两侧距离    
+    const marginBottom = 180 // 距离底面的距离
+    const totalWidth = canvas.width // 总宽度
+    const totalHeight = canvas.height // 总高度
+
+    const gravity = 9.81
+    const meter = 20
+    const pixel = canvas.width
+    const pixelPerMeter = pixel / meter
+
+
+    // 精灵绘制器 1.小球 2.发射台 3.水桶
+    const ballPainter = {
+        paint:function(sprite,context) {
+            const radius = sprite.width / 2
+            context.fillStyle = '#ff99cc'
+            context.strokeStyle = '#ffd480'
+            context.beginPath()
+            context.arc(sprite.left+radius,sprite.top+radius,radius,0,Math.PI*2,false)
+            context.fill()
+            context.stroke()
+        }        
+    }
+
+
+    const launchPadPainter = {
+        paint:function(sprite,context) {
+            context.fillStyle = '#00b300'
+            context.strokeStyle = '#ffff1a'
+            context.beginPath()
+            context.rect(sprite.left,sprite.top,sprite.width,sprite.height)
+            context.fill()
+            context.stroke()
+        }
+    }
+
+    const bucketPainter = {
+        paint:function(sprite,context){
+            context.fillStyle = '#00b300'
+            context.strokeStyle = '#ffff1a'
+            context.beginPath()
+            context.rect(sprite.left,sprite.top,sprite.width,sprite.height)
+            context.fill()
+            context.stroke()
+        }
+    }
+
+    // 精灵行为
+    const ballBehavior = {
+        lastTime: + new Date(),
+        checkBounds:function(sprite){
+            if(sprite.top >= totalHeight) {
+                reset()
+            }
+        },
+        execute:function(sprite,ctx,time){
+            if(ballIsFly) {
+                const deltaTime = (time - launchTime) / 1000 // 过去的总时间 
+                const fpsTime = (time - this.lastTime) /1000 // 距离上一帧的时间
+                // 计算小球的水平速度和竖直速度
+                ball.velocityX = launchVelocity * Math.cos(launchAngle)
+                ball.velocityY =  gravity * deltaTime - (launchVelocity * Math.sin(launchAngle))
+                
+                ball.top += ball.velocityY * fpsTime * pixelPerMeter
+                ball.left += ball.velocityX * fpsTime * pixelPerMeter
+                console.log(ball);
+                this.lastTime = time
+                // 监测是否应该结束
+                this.checkBounds(sprite)
+                // 计算小球当前的坐标
+            }
+            this.lastTime = time
+            
+        }
+    }
+
+    function reset(){
+        // 重置初始值
+        ballIsFly = false
+        ball.left = launchPad.left + launchPad.width / 2 - ball.width / 2
+        ball.top = launchPad.top - ball.width
+        ball.velocityX = 0
+        ball.velocityY = 0
+    }
+
+    // 创建精灵
+    const ball = new Sprite('ball',ballPainter,[ballBehavior]) // 小球
+    const launchPad = new Sprite('launchPad',launchPadPainter) // 发射台
+    const bucket = new Sprite('bucket',bucketPainter) // 水桶
+
+    // 精灵参数初始化
+    function initSpriteParam(){
+
+        launchPad.width = 100
+        launchPad.height = 15
+        launchPad.top = totalHeight - launchPad.height - marginBottom
+        launchPad.left = marginSides
+
+        ball.width = 20
+        ball.height = 20
+        ball.left = launchPad.left + launchPad.width / 2 - ball.width / 2
+        ball.top = launchPad.top - ball.width
+
+        bucket.width = 100
+        bucket.height = 15
+        bucket.left = totalWidth - bucket.width - marginSides
+        bucket.top = totalHeight - bucket.height - marginBottom
+    }
+
+    // 停止恢复的方法
+    drawBackground()
+
+    // FIXME 以下的方法需要修改 --放到事件中执行
+    initSpriteParam()
+
+
+
+
+    // 坐标转换方法
+    function windowTocanvas(x,y){
+        const cbox = canvas.getBoundingClientRect()
+        return {
+            x: x-cbox.left*(canvas.width/cbox.width),
+            y:y-cbox.top*(canvas.height/cbox.height)
+        }
+    }
+
+    /**
+     * 监听小球的移动速度 
+     */
+    let launchAngle = 0
+    let launchVelocity = 0
+    let launchStartX = 0 // 发射初始位置
+    let launchStartY = 0
+    let launchEndX = 0 // 发射的终点位置
+    let launchEndY = 0
+    let ballIsFly = false // 小球是否正在飞
+
+
+    canvas.onmousemove = (e) =>{
+        if(ballIsFly) return
+        e.preventDefault()
+        const loc = windowTocanvas(e.clientX,e.clientY)
+        launchStartX = ball.left + ball.width / 2
+        launchStartY = ball.top + ball.height / 2
+        launchEndX = loc.x
+        launchEndY = loc.y
+        const deltaX = Math.abs(launchEndX - launchStartX)
+        const deltaY = Math.abs(launchEndY - launchStartY)
+        launchAngle = Math.atan(deltaY / deltaX) // 发射角度
+        launchVelocity = 4 * deltaY / Math.sin(launchAngle) / pixelPerMeter // 发射速度
+    }
+
+    // 绘制发射线条
+    function drawLaunchLine(){
+        ctx.beginPath()
+        ctx.strokeStyle = 'white'
+        ctx.moveTo(launchStartX,launchStartY)
+        ctx.lineTo(launchEndX,launchEndY)
+        ctx.stroke()
+    }
+
+    
+    // 绘制背景
+    function drawBackground(){
+        ctx.fillStyle = '#00ccff'
+        ctx.fillRect(0,0,totalWidth,totalHeight)
+    }
+    
+    // 绘制精灵
+    function paintSprite(){
+        ball.paint(ctx)
+        launchPad.paint(ctx)
+        bucket.paint(ctx)
+    }
+
+    // 更新精灵
+    // time 为当前时间
+    function updateSprites(time) {
+        ball.update(ctx,time)
+    }
+
+    let launchTime = 0 // 初始时间
+    canvas.onmousedown = (e) =>{
+        if(!ballIsFly) {
+            launchTime = +new Date()
+            ball.velocityX = launchVelocity * Math.cos(launchAngle)
+            ball.velocityY = launchVelocity * Math.sin(launchAngle)
+            ballIsFly = true
+        }
+    }
+
+    
+    // 执行动画 -- 动画一直在执行 重绘背景和线条
+    function animate(){
+        ctx.clearRect(0,0,totalWidth,totalHeight)
+        drawBackground()
+        // 如果小球不在飞的话 重绘精灵 和 线条
+        if(!ballIsFly) {
+            drawLaunchLine()
+        }
+        
+        const time = +new Date()
+        // 更新小球的位置
+        updateSprites(time)
+        // 重新绘制小球
+        paintSprite()
+        window.requestAnimationFrame(animate)
+    }
+
+    window.requestAnimationFrame(animate)
+
+    
+
+</script>
+</html>
