@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../5-精灵/Sprite.js"></script>
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script type="module">
+    import AnimationTimer from '../4-动画//AnimationTimer.mjs'
+
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    
+    // TODO 钟摆运动的公式 计算小球变化的角度和时间、初始角度的关系
+    // 选中中心坐标
+    const PIVOT_CENTER_X = canvas.width/2
+    const PIVOT_CENTER_Y = 15
+    const PIVOT_CENTER_RADIUS = 7
+
+    const INITIAL_ANGLE  = 30 // 起始角度
+    const ROD_LENGTH = 500 // 绳子长度
+    const WEIGHT_RADIUS = 20 // 小球的半径
+    const GRAVITY = 32 // 重力
+
+    // 钟摆绘制器
+    const pendulumPainter = {
+        paint:function(sprite,context) {
+            //  绘制主轴
+            this.drawPivot(sprite,context)
+            //  绘制线条
+            this.drawRod(sprite,context)
+            //  绘制小球
+            this.drawWeight(sprite,context)
+        },
+
+        drawPivot:function (sprite,context){
+            ctx.beginPath()
+            ctx.arc(sprite.x,sprite.y,sprite.width/2,0,Math.PI*2)
+            ctx.stroke()
+        },
+
+        drawRod:function(sprite,context) {
+            ctx.beginPath()
+            ctx.moveTo(sprite.x,sprite.y+sprite.width/2)
+            const rodX = sprite.x + Math.sin(sprite.angle) * ROD_LENGTH
+            const rodY = sprite.y + Math.cos(sprite.angle) * ROD_LENGTH
+            ctx.lineTo(rodX,rodY)
+            ctx.stroke()
+        },
+
+        drawWeight:function(sprite,context) {
+            ctx.beginPath()
+            ctx.arc(sprite.weightX,sprite.weightY,sprite.weightRadius,0,Math.PI*2)
+            ctx.stroke()
+        }
+    }
+
+
+    let elapsedTime = 0 // 过去的时间
+    const swing = {
+        execute:function(sprite,context,time){
+            // 计算角度 
+            sprite.angle = sprite.initialAngle * Math.cos(Math.sqrt(9.8 / 3) * elapsedTime)
+            // 计算小球的中心点坐标
+            console.log(sprite.angle);
+            sprite.weightX = sprite.x + Math.sin(sprite.angle) * (ROD_LENGTH + sprite.weightRadius)
+            sprite.weightY = sprite.y + Math.cos(sprite.angle) * (ROD_LENGTH + sprite.weightRadius)
+            this.lastTime = time
+        }
+    }
+    // 创建钟摆对象
+    const pendulum = new Sprite('pendulum',pendulumPainter,[swing])
+    // 设置初始值
+    pendulum.x = PIVOT_CENTER_X
+    pendulum.y = PIVOT_CENTER_Y
+    pendulum.width = PIVOT_CENTER_RADIUS * 2
+    pendulum.height = PIVOT_CENTER_RADIUS * 2
+    pendulum.initialAngle = INITIAL_ANGLE * Math.PI / 180
+    pendulum.weightRadius = WEIGHT_RADIUS
+    function animate() {
+        const time =+ new Date()
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        pendulum.update(ctx)
+        pendulum.paint(ctx)        
+        elapsedTime = (time - startTime) / 1000
+        window.requestAnimationFrame(animate)
+    }
+    const startTime =+ new Date()
+    window.requestAnimationFrame(animate)
+
+    // 钟摆行为对象
+</script>
+</html>
