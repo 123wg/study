@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../5-精灵/Sprite.js"></script>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas width='1800' height='900' id="canvas"></canvas>
+</body>
+<script type="module">
+    import AnimationTimer from './AnimationTimer.mjs'
+
+    // 时间扭曲函数 -- 用来描述与时间呈线性变化关系的属性 包括 位置、颜色、爱他特征等
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    const DURATION = 30000 // 持续时间 ms
+    
+    // 获取不同的时间扭曲函数
+
+    // 动画计时器
+    const animationTimer  = new AnimationTimer(DURATION)
+
+    animationTimer.timeWrap = AnimationTimer.makeBounce(2)
+    
+
+
+    // 小球绘制器
+    const ballPainter = {
+        paint(sprite,context) {
+            context.beginPath()
+            const radius = sprite.width / 2
+            context.arc(sprite.left + radius,sprite.top,radius,0,Math.PI * 2)
+            context.stroke()
+        }
+    }
+
+    // 小球运动对象
+    const move = {
+        lastTime:undefined,
+        execute:function(sprite,context,time){
+            // 判断动画计时器是否开始
+            const elapsedTime = animationTimer.getElapsedTime()
+            const fpsTime = elapsedTime - this.lastTime
+
+            if(this.lastTime != undefined) {
+                if(animationTimer.isRunning()) {
+                    // 获取速度
+                    const fps = 1000 / fpsTime
+                    console.log('fps'+fps);
+                    sprite.left+= sprite.velocityX / fps
+                    // 更新位置
+                    if(animationTimer.isOver()) {
+                        animationTimer.stop()
+                    }
+                }
+            }
+
+            this.lastTime = elapsedTime
+        }
+    }
+    
+    const ball = new Sprite('ball',ballPainter,[move])
+    ball.left = 0
+    ball.top = canvas.height / 2 
+    ball.width = 40
+    ball.height = 40
+    ball.velocityX = 100
+
+    
+    function animate() {
+        const time = +new Date()
+        ctx.clearRect(0,0,canvas.width,canvas.height)
+        ball.update(ctx,time)
+        ball.paint(ctx)
+        window.requestAnimationFrame(animate)
+    }
+    let startTime = +new Date()
+    animationTimer.start()
+    window.requestAnimationFrame(animate)
+</script>
+</html>
