@@ -1,0 +1,15 @@
+## 1.webgl 入门
+- 清空绘图区
+    - 清空颜色缓冲区 
+        - clearColor(rgba)
+        - clear(gl.COLOR_BUFFET_BIT)
+- 着色器的基本概念
+    - 顶点着色器
+    - 片元着色器
+- 使用着色器的webgl程序结构
+    - 获取canvas元素
+    - 获取webgl上下文
+    - 初始化着色器
+    - 设置canvas背景色
+    - 清除canvas
+    - 绘图 绘制操作 drawArrays(mode,first,count)

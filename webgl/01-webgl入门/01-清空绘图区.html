@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+           border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1500" height="900"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas')
+        const gl = canvas.getContext('webgl')
+        
+        // 设置清空颜色 颜色使用rgba 0.0-1.0
+        gl.clearColor(0.0,0.0,0.0,1.0)
+        // 清空颜色缓冲区  还有深度缓冲区(gl_DEPTH_BUFFER_BIT)和模板缓冲区(gl_STENCIL_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+    </script>
+</body>
+</html>
