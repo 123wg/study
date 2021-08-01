@@ -13,8 +13,8 @@ AnimationTimer.prototype = {
     start:function(){
         this.stopWatch.start()
     },
-    end:function(){
-        this.stopWatch.end()
+    stop:function(){
+        this.stopWatch.stop()
     },
     isOver:function(){
         return this.stopWatch.getElapsedTime() > this.duration
@@ -28,11 +28,13 @@ AnimationTimer.prototype = {
         const percentComplete = elapsedTime / this.duration
         if(this.stopWatch.isRunning()) {
             if(!this.timeWrap) return elapsedTime
-            return elapsedTime * this.timeWrap(percentComplete) / percentComplete
+            return elapsedTime * this.timeWrap(percentComplete) / percentComplete || 0
         }else {
             return undefined
         }
-        
+    },
+    reset:function(){
+        this.stopWatch.reset()
     }
 }
 
@@ -62,7 +64,7 @@ AnimationTimer.makeElastic = function(passes) {
         return ((1 - Math.cos(percentComplete * Math.PI * passes)) * (1 - percentComplete)) + percentComplete
     }
 }
-// 5.弹跳运动 ？？？
+// 5.弹跳运动 ？？？ 参数为经过中轴线的次数
 AnimationTimer.makeBounce = function(bounces) {
    const fn = AnimationTimer.makeElastic(bounces) 
    return function(percentComplete) {
@@ -70,7 +72,7 @@ AnimationTimer.makeBounce = function(bounces) {
        return percentComplete <=1?percentComplete:2-percentComplete
    }
 }
-// 6.线性运动
+// 6.线性运动 参数为弹跳的次数
 AnimationTimer.makeLinear = function() {
     return function(percentComplete) {
         return percentComplete
