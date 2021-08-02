@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../lib/cuon-utils.js"></script>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+           border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1500" height="900"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas')
+        const gl = canvas.getContext('webgl')
+        
+        // 初始化顶点着色器
+        const VSHADER_SOURCE = 
+        'attribute vec4 a_Position;'+
+        'void main() {'+
+        '   gl_Position = a_Position;'+
+        '   gl_PointSize = 10.0;'+
+        '}'
+
+        const FSHADER_SOURCE = 
+        'void main() {'+
+        '   gl_FragColor = vec4(1.0,0.0,0.0,1.0);'+
+        '}';
+
+        // 初始化shader 
+        if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)){
+            console.log('初始化失败');
+        }
+
+        // 获取坐标存储地址
+        const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+
+       
+        // 初始化片元着色器
+        // 注册点击事件
+        const points = []
+        canvas.onclick = (e) =>{
+            // 将屏幕坐标转化为canvas坐标 然后将canvas坐标转化为webgl坐标
+            const rect = e.target.getBoundingClientRect()
+            
+            // 将坐标点转化为webgl坐标 注意坐标转换的算法
+            const x = ((e.clientX - rect.left) - canvas.width/2)/(canvas.width/2)
+            const y = (canvas.height/2 - (e.clientY - rect.top))/(canvas.height/2)
+
+            points.push([x,y])
+
+            // 每次点击的时候都要清空画布  因为在每次绘制点之后 颜色缓冲区就被webgl重置为默认的透明色了
+            gl.clear(gl.COLOR_BUFFER_BIT)
+            
+            points.forEach(item=>{   
+                gl.vertexAttrib3f(a_Position,item[0],item[1],0)
+                 // 开始绘制点 从第几个点开始绘制  绘制的数量是多少
+                gl.drawArrays(gl.POINTS,0,1)
+            })
+        }
+        
+         // 清空背景色
+        gl.clearColor(0.0,0.0,0.0,1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        
+
+    </script>
+</body>
+</html>
