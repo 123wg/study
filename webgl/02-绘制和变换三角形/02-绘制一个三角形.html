@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../lib/cuon-utils.js"></script>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+           border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1500" height="900"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas')
+        var gl = canvas.getContext('webgl')
+        
+
+
+        const VSHADER_SOURCE = 
+        'attribute vec4 a_Position;'+
+        'void main() {'+
+        '   gl_Position = a_Position;'+
+        '}'
+        
+        const FSHADER_SOURCE = 
+        'void main(){'+
+        '   gl_FragColor = vec4(1.0,0.0,0.0,1.0);'+
+        '}'
+
+        // 初始化shader
+        if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)){
+            console.log('初始化着色器错误');
+        }
+
+        const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+        if(a_Position < 0) {
+            console.log('获取变量地址失败');
+        }
+        const points = new Float32Array([-0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,-0.5])
+        const buffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER,buffer)
+        gl.bufferData(gl.ARRAY_BUFFER,points,gl.STATIC_DRAW)
+        gl.vertexAttribPointer(a_Position,2,gl.FLOAT,false,0,0)
+        gl.enableVertexAttribArray(a_Position)
+        gl.clearColor(0.0,0.0,0.0,1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        
+        /**
+        *@description: 绘制点
+        *@param{gl.POINTS} 绘制一系列点
+        *@param{gl.LINES} 绘制单独的线段 (V0,V1) (V2,V3)
+        *@param{gl.LINE_STRIP} 绘制连接的线段 (V0,V1 - V1,V2)
+        *@param{gl.LINE_LOOP} 绘制闭合的线段
+        *@param{gl.TRIANGLES} 绘制单独的三角形
+        *@param{gl.TRIANGLE_STRIP} 绘制连接的三角形 注意都是按照逆时针找点
+        *@param{gl.TRIANGLE_FAN} 绘制三角形组成的扇形图形 
+        */
+        // first 从哪个顶点开始绘制
+        gl.drawArrays(gl.TRIANGLE_FAN,0,4)
+        // gl.drawArrays(gl.TRIANGLES,0,3)
+        
+    </script>
+</body>
+</html>
