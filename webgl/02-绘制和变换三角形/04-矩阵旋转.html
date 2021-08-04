@@ -28,12 +28,16 @@
         const canvas = document.getElementById('canvas')
         var gl = canvas.getContext('webgl')
         
+
+        // 矩阵旋转使用的公式
+        // nx = 
+
         // 平移和缩放 
         const VSHADER_SOURCE = 
-        'uniform vec4 u_Translate;'+
+        'uniform mat4 u_Transform;'+
         'attribute vec4 a_Position;'+
         'void main() {'+
-        '   gl_Position = a_Position + u_Translate;'+
+        '   gl_Position = u_Transform * a_Position;'+
         '}'
 
         const FSHADER_SOURCE = 
@@ -50,16 +54,36 @@
         }
         // 获取变量地址
         const a_Position = gl.getAttribLocation(gl.program,'a_Position')
-        const u_Translate = gl.getUniformLocation(gl.program,'u_Translate')
-        if(a_Position<0 || u_Translate<0) {
+        const u_Transform = gl.getUniformLocation(gl.program,'u_Transform')
+        if(a_Position<0 || u_Transform<0) {
             console.log('获取变量地址失败');
         }
 
+        // 旋转角度 正向旋转45度
+        const angle = 60
+        const cosA = Math.cos(Math.PI * 45 / 180.0)
+        const sinA = Math.sin(Math.PI * 45 / 180.0)
+
+        // 床架变换矩阵 注意在WebGL中矩阵是列主序的
+        const matrix4 = new Float32Array([
+            cosA,sinA,0.0,0.0,
+            -sinA,cosA,0.0,0.0,
+            0.0,0.0,1.0,0.0,
+            0.0,0.0,0.0,1.0
+        ])
+
+        // const matrix4 = new Float32Array([
+        //     1,0,0.0,0.0,
+        //     0,1,0.0,0.0,
+        //     0.0,0.0,1.0,0.0,
+        //     0.0,0.0,0.0,1.0
+        // ])
+
         // 创建点位坐标
-        const points = new Float32Array([0.0,0.0,0.5,0.5,-0.5,0.5])
+        const points = new Float32Array([0.0,-0.5,0.5,0.5,-0.5,0.5])
 
         // 创建偏移变量
-        gl.uniform4f(u_Translate,dx,dy,0.0,0.0)
+        gl.uniformMatrix4fv(u_Transform,false,matrix4)
 
         // 创建缓冲区
         const buffer = gl.createBuffer()
