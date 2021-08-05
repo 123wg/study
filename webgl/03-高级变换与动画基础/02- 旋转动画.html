@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix.js"></script>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+           border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1500" height="900"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas')
+        var gl = canvas.getContext('webgl')
+        
+
+        // 1.主要学习 已有的函数库的使用 -- 先不用纠结里面的技术细节
+        const VSHADER_SOURCE = 
+        'uniform mat4 u_Translation;'+
+        'attribute vec4 a_Position;'+
+        'void main() {'+
+        '   gl_Position = u_Translation * a_Position;'+
+        '}'
+
+        const FSHADER_SOURCE = 
+        'void main() {'+
+        '   gl_FragColor = vec4(1.0,0.0,0.0,1.0);'+
+        '}'
+     
+        // 创建位置数组
+        const points = new Float32Array([0.0,0.0,-0.5,0.5,0.3,0.3])
+
+
+        // 初始化着色器
+        if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)) {
+            console.log('初始化着色器错误');
+        }
+
+        // 获取变量地址
+        const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+        if(a_Position <0 ){
+            console.log('获取变量地址失败');
+        }
+
+        const u_Translation = gl.getUniformLocation(gl.program,'u_Translation');
+        if(!u_Translation) {
+            console.log('获取矩阵变量失败');
+        }
+
+        // 创建缓冲区
+        const buffer = gl.createBuffer()
+        // 绑定缓冲区
+        gl.bindBuffer(gl.ARRAY_BUFFER,buffer)
+
+        gl.clearColor(0.0,0.0,0.0,1.0)
+
+        // 创建矩阵
+        const matrix = new Matrix4()
+        matrix.setIdentity()
+
+        // 当前旋转的角度
+        let angle = 1
+        let lastTime = 0
+        // 调用动画开始旋转
+        function animate() {
+            const time =+ new Date()
+            if(lastTime === 0) lastTime = time
+            else {
+                // 旋转
+                matrix.setRotate(angle % 360,0,1,1)
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                gl.uniformMatrix4fv(u_Translation,false,matrix.elements)
+                gl.bufferData(gl.ARRAY_BUFFER,points,gl.STATIC_DRAW)
+                gl.vertexAttribPointer(a_Position,2,gl.FLOAT,false,0,0)
+                gl.enableVertexAttribArray(a_Position)
+
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                // 开始绘制
+                angle += 1
+                lastTime = time
+                gl.drawArrays(gl.TRIANGLES,0,3)
+            }
+            window.requestAnimationFrame(animate)
+        }
+        window.requestAnimationFrame(animate)  
+    </script>
+</body>
+</html>
