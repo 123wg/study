@@ -43,7 +43,7 @@
         setInterval(()=>{
             // 清除的时候 起始坐标不是 0 0 证明canvas中可以将图像绘制在canvas之外
             // 通过变换canvas的坐标 做背景滚动的效果
-            ctx.translate(0,0.5)
+            ctx.translate(0,5)
             ctx.clearRect(-sw/2+w/2,-sh/2+h/2,sw,sh)
             ctx.drawImage(img,-sw/2+w/2,-sh/2+h/2,sw,sh)
         },200)

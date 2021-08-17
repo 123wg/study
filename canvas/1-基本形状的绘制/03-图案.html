@@ -25,7 +25,7 @@
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
     const img = new Image()
-    img.src = '../img/11.png'
+    img.src = '/img/11.png'
     // createPattern(图片|video|canvas,'repeat'|'repeat-x'|'repeat-y'|'no-repeat')
     img.onload = ()=>{
         const pattern = ctx.createPattern(img,'repeat-x')
