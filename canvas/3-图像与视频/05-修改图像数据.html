@@ -66,6 +66,7 @@
     // 1.持续调用getImageData 可能会成为性能瓶颈
     function getImageData(){
         imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+        console.log(imageData);
     }
 
     // 绘制橡皮圈

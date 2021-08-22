@@ -29,11 +29,11 @@
     const ctx = canvas.getContext('2d')
     
     const img = new Image()
-    img.src = '/img/333333.jpg'
+    img.src = '/img/333.png'
     img.onload = () =>{
-       ctx.drawImage(img,0,0) // 绘制整幅图
-       ctx.drawImage(img,0,0,200,100) // 绘制整幅图并进行缩放
-       ctx.drawImage(img,0,0,200,200,0,0,canvas.width,canvas.height)
+    //    ctx.drawImage(img,0,0) // 绘制整幅图
+    //    ctx.drawImage(img,0,0,200,100) // 绘制整幅图并进行缩放
+       ctx.drawImage(img,0,0,img.width,img.height,0,0,canvas.width,canvas.height)
     }
     
 </script>

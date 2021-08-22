@@ -106,8 +106,8 @@
             circle.y - circle.radius <= 0){
                 circle.disy = -circle.disy
             }
-            circle.x += circle.disx/1000 * interValTime
-            circle.y += circle.disy/1000 * interValTime
+            circle.x += circle.disx * (interValTime / 1000)
+            circle.y += circle.disy * (interValTime / 1000)
         }
         lastTimes = time
     }

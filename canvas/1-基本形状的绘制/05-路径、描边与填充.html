@@ -25,6 +25,7 @@
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
 
+
     // 矩形
     ctx.beginPath()
     ctx.rect(10,10,100,100)
@@ -34,11 +35,35 @@
     ctx.fill()
 
     // 弧形
+    // ctx.beginPath()
+    // ctx.arc(200,200,60,0,Math.PI*3/2)
+    // ctx.closePath() // 闭合路径
+    // ctx.fill()
+    // ctx.stroke()
+
+    // 渐变描边圆形
+    gradient = ctx.createLinearGradient(300, 300, 200, 200);
+    gradient.addColorStop(0, 'blue');
+    // gradient.addColorStop(0.25,'pink')
+    gradient.addColorStop(0.5,'purple')
+    gradient.addColorStop(0.75,'red')
+    gradient.addColorStop(1,'yellow')
+    ctx.strokeStyle = gradient
     ctx.beginPath()
-    ctx.arc(200,200,60,0,Math.PI*3/2)
-    ctx.closePath() // 闭合路径
-    ctx.fill()
+    ctx.arc(300,300,150,0,Math.PI*2)
     ctx.stroke()
+
+    const img = new Image()
+    img.src = '/img/333.png'
+    // createPattern(图片|video|canvas,'repeat'|'repeat-x'|'repeat-y'|'no-repeat')
+    img.onload = ()=>{
+        const pattern = ctx.createPattern(img,'repeat-x')
+        ctx.fillStyle = pattern
+        ctx.strokeStyle = '#fff'
+        ctx.arc(300,300,150,0,Math.PI*2)
+        ctx.fill()
+        ctx.stroke()
+    }
 
 </script>
 </html>
