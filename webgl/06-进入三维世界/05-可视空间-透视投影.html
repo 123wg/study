@@ -51,19 +51,33 @@
         '   gl_FragColor = v_Color;'+
         '}'
 
-        // 顶点数据
+        // 左右两侧各有三个三角形
         const points = new Float32Array([
-            0.0,0.5,-0.4, 0.4,1.0,0.4, //绿色的三角形 --后面
-            -0.5,-0.5,-0.4, 0.4,1.0,0.4,
-            0.5,-0.5,-0.4, 1.0,0.4,0.4,
+            // 右侧的三角形
+            0.75,1.0,-4.0, 0.4,1.0,0.4, // 绿色三角形在最后
+            0.25,-1.0,-4.0, 0.4,1.0,0.4,
+            1.25,-1.0,-4.0, 1.0,0.4,0.4,
 
-            0.5,0.4,-0.2, 1.0,0.4,0.4, // 黄色三角形 --中间
-            -0.5,0.4,-0.2, 1.0,1.0,0.4,
-            0.0,-0.6,-0.2, 1.0,1.0,0.4,
+            0.75,1.0,-2.0, 1.0,1.0,0.4, // 黄色三角形在中间
+            0.25,-1.0,-2.0, 1.0,1.0,0.4,
+            1.25,-1.0,-2.0,1.0,0.4,0.4,
 
-            0.0,0.5,0.0, 0.4,0.4,1.0,// 蓝色三角形 --前面
-            -0.5,-0.5,0.0, 0.4,0.4,1.0,
-            0.5,-0.5,0.0, 1.0,0.4,0.4
+            0.75,1.0,0.0,0.4,0.4,1.0, // 蓝色三角形在最前面
+            0.25,-1.0,0.0,0.4,0.4,1.0,
+            1.25,-1.0,0.0,1.0,0.4,0.4,
+
+            // 左侧的三个三角形 
+            -0.75,1.0,-4.0,0.4,1.0,0.4, // 绿色在最后
+            -1.25,-1.0,-4.0,0.4,1.0,0.4,
+            -0.25,-1.0,-4.0,1.0,0.4,0.4,
+
+            -0.75,1.0,-2.0,1.0,1.0,0.4, // 黄色在中间
+            -1.25,-1.0,-2.0,1.0,1.0,0.4,
+            -0.25,-1.0,-2.0,1.0,0.4,0.4,
+
+            -0.75,1.0,0.0,0.4,0.4,1.0, // 蓝色在最前面
+            -1.25,-1.0,0.0,0.4,0.4,1.0,
+            -0.25,-1.0,0.0,1.0,0.4,0.4
         ])
         if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)) {
             console.log('初始化着色器出错');
@@ -75,7 +89,6 @@
         const u_ViewMatrix = gl.getUniformLocation(gl.program,'u_ViewMatrix')
         const u_ProjMatrix = gl.getUniformLocation(gl.program,'u_ProjMatrix')
         if(a_Position < 0 || a_Color < 0) console.log('获取存储位置失败');
-        // 获取颜色变量
 
         const BYTES = points.BYTES_PER_ELEMENT
         // 创建缓冲区
@@ -93,9 +106,9 @@
         
 
 
-        let eye_x = 0.2
-        let eye_y = 0.25
-        let eye_z = 0.25
+        let eye_x = 0.0
+        let eye_y = 0.0
+        let eye_z = 0.0
         // 监听键盘事件
         document.onkeydown = (evt)=>{
             console.log(evt.keyCode );
@@ -118,20 +131,20 @@
 
         // 投影矩阵
         const projMatrix = new Matrix4()
-        projMatrix.setOrtho(-1.0,1.0,-1.0,1.0,-0.2,20.0)
+        projMatrix.setPerspective(30,canvas.width/canvas.height,1,100)
         gl.uniformMatrix4fv(u_ProjMatrix,false,projMatrix.elements)
         // 绘制方法
         function draw(){
             console.log('执行');
             // 设置视图矩阵
-            matrix4.setLookAt(eye_x,eye_y,eye_z, 0,0,0,0,1,0)
+            matrix4.setLookAt(0.0,0.0,5,0,0,0,0,1,0)
             gl.uniformMatrix4fv(u_ViewMatrix,false,matrix4.elements)
             
             // 清空颜色缓冲区
             gl.clearColor(0.0,0.0,0.0,1.0)
             gl.clear(gl.COLOR_BUFFER_BIT)
 
-            gl.drawArrays(gl.TRIANGLES,0,9)
+            gl.drawArrays(gl.TRIANGLES,0,18)
         }
 
         draw()
