@@ -30,16 +30,17 @@
         var gl = canvas.getContext('webgl')
         
 
-        // 1.WebGL绘制的时候 会按照缓冲区中的顺序绘制 后绘制的点会遮挡之前绘制的点
+        // 1.深度冲突也叫Z冲突 指的是两个物体的面离得比较近的时候 出现斑驳、闪烁的情况
+        // 2.使用多边形偏移可解决问题
         const VSHADER_SOURCE = 
         'attribute vec4 a_Position;'+
         'attribute vec4 a_Color;'+
         'varying vec4 v_Color;'+
         'uniform mat4 u_ViewMatrix;'+ // 视图矩阵
         'uniform mat4 u_ProjMatrix;'+ // 投影矩阵
-        'uniform mat4 u_ModelMatrix;'+ // 模型矩阵
+        // 'uniform mat4 u_ModelMatrix;'+ // 模型矩阵
         'void main() {'+
-        '   gl_Position = u_ProjMatrix * u_ViewMatrix  * u_ModelMatrix*  a_Position;'+
+        '   gl_Position = u_ProjMatrix * u_ViewMatrix  *  a_Position;'+
         '   gl_PointSize = 5.0;'+
         '   v_Color = a_Color;'+
         '}'
@@ -53,17 +54,13 @@
 
         // 左右两侧各有三个三角形
         const points = new Float32Array([
-            0.0,1.0,0.0,0.4,0.4,1.0, // 蓝色三角形在最前面
-            -0.5,-1.0,0.0,0.4,0.4,1.0,
-            0.5,-1.0,0.0,1.0,0.4,0.4,
+            0.0,2.5,-5.0,0.0,1.0,0.0, // 蓝色三角形在最前面
+            -2.5,-2.5,-5.0,0.0,1.0,0.0,
+            2.5,-2.5,-5.0,1.0,0.0,0.0,
 
-            0.0,1.0,-4.0, 0.4,1.0,0.4, // 绿色三角形在最后
-            -0.5,-1.0,-4.0, 0.4,1.0,0.4,
-            0.5,-1.0,-4.0, 1.0,0.4,0.4,
-
-            0.0,1.0,-2.0, 1.0,1.0,0.4, // 黄色三角形在中间
-            -0.5,-1.0,-2.0, 1.0,1.0,0.4,
-            0.5,-1.0,-2.0,1.0,0.4,0.4,
+            0.0,3.0,-5.0,1.0,0.0,0.0, // 绿色三角形在最后
+            -3.0,-3.0,-5.0,1.0,1.0,0.0,
+            3.0,-3.0,-5.0,1.0,1.0,0.0
         ])
         if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)) {
             console.log('初始化着色器出错');
@@ -109,22 +106,23 @@
         // 清空颜色缓冲区
         gl.clearColor(0.0,0.0,0.0,1.0)
         
-        // 2.开启隐藏面消除
         gl.enable(gl.DEPTH_TEST)
-        // 3.清除深度缓冲区 深度缓冲区是一个中间对象 就是用来帮助webgl实现隐藏面消除的
-        // 在绘制任一帧之前，都需要清空深度缓冲区 消除绘制上一帧留下的痕迹
+        // 2.启用多边形偏移
+        gl.enable(gl.POLYGON_OFFSET_FILL)
+        // 3.设置多边形偏移
+        gl.polygonOffset(1.0,1.0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         
         // 绘制右侧三角形
-        modelMatrix.setTranslate(0.75,0,0)
-        gl.uniformMatrix4fv(u_ModelMatrix,false,modelMatrix.elements)
-        gl.drawArrays(gl.TRIANGLES,0,9)
+        // modelMatrix.setTranslate(0.75,0,0)
+        // gl.uniformMatrix4fv(u_ModelMatrix,false,modelMatrix.elements)
+        gl.drawArrays(gl.TRIANGLES,0,6)
 
         // 绘制左侧三角形
-        modelMatrix.setTranslate(-0.75,0,0)
-        gl.uniformMatrix4fv(u_ModelMatrix,false,modelMatrix.elements)
-        gl.drawArrays(gl.TRIANGLES,0,9)
+        // modelMatrix.setTranslate(-0.75,0,0)
+        // gl.uniformMatrix4fv(u_ModelMatrix,false,modelMatrix.elements)
+        // gl.drawArrays(gl.TRIANGLES,0,9)
 
     </script>
 </body>
