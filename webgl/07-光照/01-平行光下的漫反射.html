@@ -42,11 +42,11 @@
         'attribute vec4 a_Normal;'+// 平面法向量
         'void main () {'+
         '   gl_Position = u_MvpMatrix * a_Position;'+
-        '   v_Color = a_Color;'+
-        // '   vec3 normal = normalize(vec3(a_Normal));'+// 法向量归一化
-        // '   float nDotL = max(dot(u_LightDirection,normal),0.0);'+// 计算光线和法向量点积
-        // '   vec3 diffuse = u_LightColor * vec3(a_Color) * nDotL;'+// 计算漫反射光的颜色
-        // '   v_Color = vec4(diffuse,a_Color.a);'+
+        // '   v_Color = a_Color;'+
+        '   vec3 normal = normalize(vec3(a_Normal));'+// 法向量归一化
+        '   float nDotL = max(dot(u_LightDirection,normal),0.0);'+// 计算光线和法向量点积
+        '   vec3 diffuse = u_LightColor * vec3(a_Color) * nDotL;'+// 计算漫反射光的颜色
+        '   v_Color = vec4(diffuse,a_Color.a);'+
         '}'
 
         const FSHADER_SOURCE = 
@@ -84,8 +84,8 @@
             1.0,1.0,1.0,-1.0,1.0,-1.0,-1.0,-1.0,1.0,1.0,-1.0,1.0, // 前面
             1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,1.0,1.0,-1.0, // 右面
             1.0,1.0,1.0,1.0,1.0,-1.0,-1.0,1.0,-1.0,-1.0,1.0,1.0, // 上面
-            -1.0,1.0,1.0,-1.0,1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,1.0,
-            -1.0,-1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
+            -1.0,1.0,1.0,-1.0,1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,1.0,// 左面
+            -1.0,-1.0,1.0,1.0,-1.0,1.0,1.0,-1.0,-1.0,-1.0,-1.0,-1.0, // 下面
             1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,1.0,-1.0,1.0,1.0,-1.0
         ])
         initArrayBuffer(gl,points,3,gl.FLOAT,a_Position)
@@ -121,9 +121,9 @@
         // 2.设置光线颜色
         gl.uniform3f(u_LightColor,1.0,1.0,1.0)
         // 3.设置光线方向 方向归一化
-        const lightDirection = new Vector3([0.5,3.0,4.0])
+        const lightDirection = new Vector3([-10.0,7.0,9.0])
         lightDirection.normalize()
-        gl.uniform3fv(u_LightColor,lightDirection.elements)
+        gl.uniform3fv(u_LightDirection,lightDirection.elements)
         
 
         // 初始化buffers
@@ -132,7 +132,7 @@
             const buffer = gl.createBuffer()
             gl.bindBuffer(gl.ARRAY_BUFFER,buffer)
             gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW)
-            gl.vertexAttribPointer(attribute,num,type,false,BYTES*3,0)
+            gl.vertexAttribPointer(attribute,num,type,false,BYTES*num,0)
             gl.enableVertexAttribArray(attribute)
             return true
         }
@@ -151,7 +151,7 @@
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         // 绘制立方体
-        gl.drawElements(gl.TRIANGLES,36,gl.UNSIGNED_BYTE,0)
+        gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_BYTE,0)
     </script>
 </body>
 </html>
