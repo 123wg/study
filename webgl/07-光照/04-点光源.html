@@ -31,23 +31,26 @@
         const canvas = document.getElementById('canvas')
         var gl = canvas.getContext('webgl')
         
-        // 1.运动物体的光照  计算逆矩阵的转置 变换后的法向量 = 模型矩阵的逆转置矩阵 * 法向量
+        // 点光源 光源位置和颜色  shader每行后面一定加上分号，否则报错 Failed to compile shader: ERROR: 0:1: 'vec4' : syntax error
         const VSHADER_SOURCE = 
-        'attribute vec4 a_Position;'+
-        'uniform mat4 u_MvpMatrix;'+ // 投影视图矩阵
-        'uniform mat4 u_NormalMatrix;'+// 逆转置矩阵
-        'attribute vec4 a_Color;'+
-        'varying vec4 v_Color;'+
-        'uniform vec3 u_AmbientLight;'+ // 环境光颜色
-        'uniform vec3 u_LightColor;'+ // 入射光颜色
-        'uniform vec3 u_LightDirection;'+// 光线方向(归一化的世界坐标)
+        'attribute vec4 a_Position;'+ // 顶点坐标
+        'uniform mat4 u_MvpMatrix;'+ // 模型投影视图矩阵
+        'uniform mat4 u_ModalMatrix;'+ // 模型矩阵 （顶点坐标变换）
+        'uniform mat4 u_NormalMatrix;'+// 法向量变换矩阵
         'attribute vec4 a_Normal;'+// 平面法向量
+        'attribute vec4 a_Color;'+ // 顶点颜色
+        'uniform vec3 u_AmbientLight;'+ // 环境光颜色
+        'uniform vec3 u_LightColor;'+ // 点光源颜色
+        'uniform vec3 u_LightPosition;'+// 点光源位置
+        'varying vec4 v_Color;'+ // 传递给片元着色器颜色
         'void main () {'+
-        '   gl_Position = u_MvpMatrix * a_Position;'+
-        '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));'+// 法向量归一化(逆转置矩阵)
-        '   float nDotL = max(dot(u_LightDirection,normal),0.0);'+// 计算光线和法向量点积
-        '   vec3 diffuse = u_LightColor * vec3(a_Color) * nDotL;'+// 计算漫反射光的颜色
-        '   vec3 ambient = u_AmbientLight * a_Color.rgb;'+
+        '   gl_Position = u_MvpMatrix * a_Position;'+ // 顶点坐标
+        '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));'+  // 计算法向量
+        '   vec4 vertexPosition = u_ModalMatrix * a_Position;'+         // 计算顶点世界坐标
+        '   vec3 lightDirection = normalize(u_LightPosition - vec3(vertexPosition));'+ // 光线方向
+        '   float nDotL = max(dot(lightDirection,normal),0.0);'+ // 计算光线和法向量点积
+        '   vec3 diffuse = u_LightColor * a_Color.rgb * nDotL;'+ // 计算漫反射光的颜色
+        '   vec3 ambient = u_AmbientLight * a_Color.rgb;'+  // 环境光颜色
         '   v_Color = vec4(diffuse + ambient,a_Color.a);'+
         '}'
 
@@ -58,12 +61,13 @@
         '   gl_FragColor = v_Color;'+
         '}'
 
+
         if(!initShaders(gl,VSHADER_SOURCE,FSHADER_SOURCE)) {
             console.log('初始化着色器失败');
         }
 
       
-        // 索引数据
+        // // 索引数据
         const indices = new Uint8Array([
             0,1,2,0,2,3, // 前面
             4,5,6,4,6,7,// 右面
@@ -75,9 +79,10 @@
         // 获取变量地址
         const a_Position = gl.getAttribLocation(gl.program,'a_Position')
         const a_Color = gl.getAttribLocation(gl.program,'a_Color')
+        const u_ModalMatrix = gl.getUniformLocation(gl.program,'u_ModalMatrix')
         const u_MvpMatrix = gl.getUniformLocation(gl.program,'u_MvpMatrix')
         const u_LightColor = gl.getUniformLocation(gl.program,'u_LightColor')
-        const u_LightDirection = gl.getUniformLocation(gl.program,'u_LightDirection')
+        const u_LightPosition = gl.getUniformLocation(gl.program,'u_LightPosition')
         const a_Normal = gl.getAttribLocation(gl.program,'a_Normal')
         const u_AmbientLight = gl.getUniformLocation(gl.program,'u_AmbientLight')
         const u_NormalMatrix = gl.getUniformLocation(gl.program,'u_NormalMatrix')
@@ -122,11 +127,10 @@
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indicesBuffer)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW)
 
-        // 平行光处理
+        // 1.点光源处理
         gl.uniform3f(u_LightColor,1.0,1.0,1.0)
-        const lightDirection = new Vector3([2.0,5.0,6.0])
-        lightDirection.normalize()
-        gl.uniform3fv(u_LightDirection,lightDirection.elements)
+        gl.uniform3f(u_LightPosition,0.0,3.0,4.0)
+        
 
         // 2.环境光处理
         gl.uniform3f(u_AmbientLight,0.2,0.2,0.2)
@@ -147,6 +151,7 @@
         // 模型矩阵 物体变换使用
         const modalMatrix =  new Matrix4()
         modalMatrix.rotate(0,0,0,1)
+        gl.uniformMatrix4fv(u_ModalMatrix,false,modalMatrix.elements)
 
         let rotate = 0
         // 监听键盘事件
@@ -158,6 +163,7 @@
                 rotate -= 1
             }
             modalMatrix.setRotate(rotate,0,0,1)
+            gl.uniformMatrix4fv(u_ModalMatrix,false,modalMatrix.elements)
             draw()
         }
 
