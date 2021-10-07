@@ -54,6 +54,8 @@
             const a_Color = gl.getAttribLocation(gl.program,'a_Color')
             const u_MvpMatrix = gl.getUniformLocation(gl.program,'u_MvpMatrix')
 
+           
+
             // 2.索引数据 --需要回顾绘制立方体的知识
             const indices = new Uint8Array([
                 0,1,2,0,2,3, // 前面
@@ -104,16 +106,65 @@
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW)
 
 
-            // 模型视图投影矩阵
+            // 视图投影矩阵
+            const mvpMatrix = new Matrix4()
+            mvpMatrix.setPerspective(50,canvas.width/canvas.height,1.0,100.0)
+            mvpMatrix.lookAt(20,10,30,0.0,0.0,0.0,0.0,1.0,0.0)
+         
+            
+
+
+           
+            let angle1 = 10
+            let angle2 = 30
+            const modelMatrix = new Matrix4()
             const matrix = new Matrix4()
-            matrix.setPerspective(50,canvas.width/canvas.height,1.0,100.0)
-            matrix.lookAt(20,10,30,0.0,0.0,0.0,0.0,1.0,0.0)
-            gl.uniformMatrix4fv(u_MvpMatrix,false,matrix.elements)
+            drawBox()
+             // 模型矩阵
 
-            gl.clearColor(0.0,0.0,0.0,1.0)
-            gl.clear(gl.COLOR_BUFFER_BIT)
+             // 3.绘制手臂的方法 -- 操作模型矩阵
+            function drawBox(){
+                gl.clearColor(0.0,0.0,0.0,1.0)
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                // 上臂
+                modelMatrix.setTranslate(0,-12,0)
+                modelMatrix.rotate(angle1,0,1,0)
+                draw(modelMatrix)
 
-            gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_BYTE,0)
+                // 前臂
+                modelMatrix.translate(0,10,0)
+                modelMatrix.rotate(angle2,0,0,1)
+                draw(modelMatrix)
+            }
+
+            
+            function draw(modelMatrix){
+                matrix.set(mvpMatrix)
+                matrix.multiply(modelMatrix)
+                gl.uniformMatrix4fv(u_MvpMatrix,false,matrix.elements)
+
+                gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_BYTE,0)
+            }
+
+           
+            const step = 1
+            // 注册键盘事件 左右 上臂转动 上下 前臂转动
+            document.onkeydown = (ev)=> {
+                // 左右 37 39
+                switch(ev.keyCode) {
+                    case 37: angle1 -= step
+                        break;
+                    case 39: angle1 += step
+                        break;
+                    case 38: angle2 -= step
+                        break;
+                    case 40: angle2 += step
+                        break;
+                }
+                drawBox()
+
+                // 上下 38 40
+            }
         }
 
         
