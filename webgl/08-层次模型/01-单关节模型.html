@@ -53,9 +53,10 @@
             const a_Position = gl.getAttribLocation(gl.program,'a_Position')
             const a_Color = gl.getAttribLocation(gl.program,'a_Color')
             const u_MvpMatrix = gl.getUniformLocation(gl.program,'u_MvpMatrix')
-
-           
-
+            const a_Normal = gl.getAttribLocation(gl.program,'a_Normal')
+            const u_LightDirection = gl.getUniformLocation(gl.program,'u_LightDirection')
+            const u_LightColor = gl.getUniformLocation(gl.program,'u_LightColor')
+            const u_NormalMatrix = gl.getUniformLocation(gl.program,'u_NormalMatrix')
             // 2.索引数据 --需要回顾绘制立方体的知识
             const indices = new Uint8Array([
                 0,1,2,0,2,3, // 前面
@@ -84,12 +85,29 @@
                 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v7-v4-v3-v2 down
                 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0　    // v4-v7-v6-v5 back
             ])
+            // 法向量
+            const normals = new Float32Array([
+                0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
+                1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,  // v0-v3-v4-v5 right
+                0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0,  // v0-v5-v6-v1 up
+                -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0,  // v1-v6-v7-v2 left
+                0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0,  // v7-v4-v3-v2 down
+                0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0   // v4-v7-v6-v5 back
+            ])
 
             const BYTES = points.BYTES_PER_ELEMENT
 
+
+            
+            // 添加光照 平行光下的 漫反射  光照颜色 光照方向
+            const lightDirec = new  Vector3([3,5,10])
+            lightDirec.normalize()
+            gl.uniform3fv(u_LightDirection,lightDirec.elements)
+            gl.uniform3f(u_LightColor,1.0,1.0,1.0)
             // 处理位置和颜色
             initBuffer(points,a_Position)
             initBuffer(colors,a_Color)
+            initBuffer(normals,a_Normal)
 
             function initBuffer(data,attribute){
                 const buffer = gl.createBuffer()
@@ -106,14 +124,11 @@
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW)
 
 
+
             // 视图投影矩阵
             const mvpMatrix = new Matrix4()
             mvpMatrix.setPerspective(50,canvas.width/canvas.height,1.0,100.0)
             mvpMatrix.lookAt(20,10,30,0.0,0.0,0.0,0.0,1.0,0.0)
-         
-            
-
-
            
             let angle1 = 10
             let angle2 = 30
@@ -125,7 +140,14 @@
              // 3.绘制手臂的方法 -- 操作模型矩阵
             function drawBox(){
                 gl.clearColor(0.0,0.0,0.0,1.0)
-                gl.clear(gl.COLOR_BUFFER_BIT)
+        
+                gl.enable(gl.DEPTH_TEST)
+                // 2.启用多边形偏移
+                gl.enable(gl.POLYGON_OFFSET_FILL)
+                // 3.设置多边形偏移
+                gl.polygonOffset(1.0,1.0)
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+                
                 // 上臂
                 modelMatrix.setTranslate(0,-12,0)
                 modelMatrix.rotate(angle1,0,1,0)
@@ -139,10 +161,16 @@
 
             
             function draw(modelMatrix){
+                // 变换法向量的矩阵
+                const normalMatrix = new Matrix4()
+                // 变换法向量
+                normalMatrix.setInverseOf(modelMatrix) // 计算逆矩阵
+                normalMatrix.transpose() // 矩阵转置
+                gl.uniformMatrix4fv(u_NormalMatrix,false,normalMatrix.elements)
+
                 matrix.set(mvpMatrix)
                 matrix.multiply(modelMatrix)
                 gl.uniformMatrix4fv(u_MvpMatrix,false,matrix.elements)
-
                 gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_BYTE,0)
             }
 
