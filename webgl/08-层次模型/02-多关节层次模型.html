@@ -52,15 +52,14 @@
             const a_Color = gl.getAttribLocation(gl.program,'a_Color')
             const a_MvpMatrix = gl.getUniformLocation(gl.program,'a_MvpMatrix')
 
-            
             // 顶点数据
             const points = new Float32Array([
-                0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,-0.5,0.5, 0.5,-0.5,0.5, // 前面
-                0.5,0.5,0.5, 0.5,-0.5,0.5, 0.5,-0.5,-0.5, 0.5,0.5,-0.5, // 右面
-                0.5,0.5,0.5, 0.5,0.5,-0.5, -0.5,0.5,-0.5, -0.5,0.5,0.5, // 上面
-                -0.5,0.5,0.5, -0.5,0.5,-0.5, -0.5,-0.5,-0.5, -0.5,-0.5,0.5, // 左面
-                -0.5,-0.5,-0.5, 0.5,-0.5,-0.5, 0.5,-0.5,0.5, -0.5,-0.5,0.5, // 下面
-                0.5,-0.5,-0.5, -0.5,-0.5,-0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5  // 背面
+                0.5, 1.0, 0.5, -0.5, 1.0, 0.5, -0.5, 0.0, 0.5,  0.5, 0.0, 0.5, // v0-v1-v2-v3 front
+                0.5, 1.0, 0.5,  0.5, 0.0, 0.5,  0.5, 0.0,-0.5,  0.5, 1.0,-0.5, // v0-v3-v4-v5 right
+                0.5, 1.0, 0.5,  0.5, 1.0,-0.5, -0.5, 1.0,-0.5, -0.5, 1.0, 0.5, // v0-v5-v6-v1 up
+                -0.5, 1.0, 0.5, -0.5, 1.0,-0.5, -0.5, 0.0,-0.5, -0.5, 0.0, 0.5, // v1-v6-v7-v2 left
+                -0.5, 0.0,-0.5,  0.5, 0.0,-0.5,  0.5, 0.0, 0.5, -0.5, 0.0, 0.5, // v7-v4-v3-v2 down
+                0.5, 0.0,-0.5, -0.5, 0.0,-0.5, -0.5, 1.0,-0.5,  0.5, 1.0,-0.5  // v4-v7-v6-v5 back
             ])
 
             // 颜色处理
@@ -96,12 +95,12 @@
             gl.clear(gl.COLOR_BUFFER_BIT)
 
             const viewProjMatrix = new Matrix4()
-            viewProjMatrix.setPerspective(50,canvas.width/canvas.height,1,100)
-            viewProjMatrix.lookAt(10,10,50,0,0,0,0,1,0)
+            viewProjMatrix.setPerspective(50,canvas.width/canvas.height,1.0,100.0)
+            viewProjMatrix.lookAt(10,20,50,0.0,0.0,0.0,0.0,1.0,0.0)
             const mvpMatrix = new Matrix4()
             const allMatrix = []
 
-            let arm1Angle = 90
+            let arm1Angle = 30
             let join1Angle = 45
             let join2Angle = 0
             let join3Angle = 0
@@ -119,22 +118,25 @@
             modelMatrix.setTranslate(0,-12,0)
             drawBox(10,2,10)
             // 2.绘制前臂
-            modelMatrix.translate(0,6,0)
+            modelMatrix.translate(0,2,0)
             modelMatrix.rotate(arm1Angle,0,1,0)
             drawBox(3,10,3)
             // 3.绘制小臂
             modelMatrix.translate(0,10,0)
-            modelMatrix.rotate(join1Angle,0,0,1)
+            modelMatrix.rotate(join1Angle,0,1,1)
             drawBox(3,10,3)
             // 4.绘制手掌
             modelMatrix.translate(0,6,0)
             modelMatrix.rotate(join2Angle,1,0,0)
             drawBox(10,2,2)
             // 5.绘制两个手指
+            pushMatrix(modelMatrix)
             modelMatrix.translate(-2,2,0)
             modelMatrix.rotate(join3Angle,1,0,0)
             drawBox(2,4,2)
-            modelMatrix.translate(4,0,0)
+            modelMatrix =  popMatrix()
+
+            modelMatrix.translate(2,2,0)
             modelMatrix.rotate(join3Angle,1,0,0)
             drawBox(2,4,2)
 
