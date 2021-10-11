@@ -100,7 +100,7 @@
 
             
             // 添加光照 平行光下的 漫反射  光照颜色 光照方向
-            const lightDirec = new  Vector3([3,5,10])
+            const lightDirec = new  Vector3([3,12,10])
             lightDirec.normalize()
             gl.uniform3fv(u_LightDirection,lightDirec.elements)
             gl.uniform3f(u_LightColor,1.0,1.0,1.0)
@@ -194,9 +194,6 @@
                 // 上下 38 40
             }
         }
-
-        
-        
     </script>
 </body>
 </html>

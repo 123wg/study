@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/glsl-loader.js"></script>
+    <style>
+        html,body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+           border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <!-- <canvas id="canvas" width="1500" height="900"></canvas> -->
+
+    <script>
+        const canvas = document.createElement('canvas');
+        canvas.width = 1500
+        canvas.height = 900
+        document.querySelector('body').appendChild(canvas);
+        const gl = canvas.getContext('webgl');
+
+        
+        // 1.初始化loader加载器
+        const glslLoader = new GLSLLoader()
+        const vertex = glslLoader.loadShader('./glsl/02vertex.glsl')
+        const frag = glslLoader.loadShader('./glsl/02frag.glsl')
+        Promise.all([vertex,frag]).then(res=>{
+            main(res)
+        })
+        function main(res){
+            const VSHSADER_SOURCE = res[0]
+            const FSHADER_SOURCE = res[1]
+            
+            if(!initShaders(gl,VSHSADER_SOURCE,FSHADER_SOURCE)) console.log('初始化着色器失败');
+            const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+            const a_Color = gl.getAttribLocation(gl.program,'a_Color')
+            const a_MvpMatrix = gl.getUniformLocation(gl.program,'a_MvpMatrix')
+
+            
+            // 顶点数据
+            const points = new Float32Array([
+                0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,-0.5,0.5, 0.5,-0.5,0.5, // 前面
+                0.5,0.5,0.5, 0.5,-0.5,0.5, 0.5,-0.5,-0.5, 0.5,0.5,-0.5, // 右面
+                0.5,0.5,0.5, 0.5,0.5,-0.5, -0.5,0.5,-0.5, -0.5,0.5,0.5, // 上面
+                -0.5,0.5,0.5, -0.5,0.5,-0.5, -0.5,-0.5,-0.5, -0.5,-0.5,0.5, // 左面
+                -0.5,-0.5,-0.5, 0.5,-0.5,-0.5, 0.5,-0.5,0.5, -0.5,-0.5,0.5, // 下面
+                0.5,-0.5,-0.5, -0.5,-0.5,-0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5  // 背面
+            ])
+
+            // 颜色处理
+            const colors = new Float32Array([
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v0-v1-v2-v3 front
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v0-v3-v4-v5 right
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v0-v5-v6-v1 up
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v1-v6-v7-v2 left
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,     // v7-v4-v3-v2 down
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0　    // v4-v7-v6-v5 back
+            ])
+            // 法向量
+            const normals = new Float32Array([
+                0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
+                1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,  // v0-v3-v4-v5 right
+                0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0,  // v0-v5-v6-v1 up
+                -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0,  // v1-v6-v7-v2 left
+                0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0,  // v7-v4-v3-v2 down
+                0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0   // v4-v7-v6-v5 back
+            ])
+
+            // 索引
+            const indices = new Uint8Array([
+                0,1,2,0,2,3, // 前面
+                4,5,6,4,6,7,// 右面
+                8,9,10,8,10,11,// 上面
+                12,13,14,12,14,15,// 左面
+                16,17,18,16,18,19,// 下面
+                20,21,22,20,22,23// 后面
+            ])
+
+            gl.clearColor(0.0,0.0,0.0,1.0)
+            gl.clear(gl.COLOR_BUFFER_BIT)
+
+            const viewProjMatrix = new Matrix4()
+            viewProjMatrix.setPerspective(50,canvas.width/canvas.height,1,100)
+            viewProjMatrix.lookAt(10,10,50,0,0,0,0,1,0)
+            const mvpMatrix = new Matrix4()
+            const allMatrix = []
+
+            let arm1Angle = 90
+            let join1Angle = 45
+            let join2Angle = 0
+            let join3Angle = 0
+        
+            // 处理顶点和颜色
+            initBuffers(points,a_Position)
+            initBuffers(colors,a_Color)
+            // 处理索引数据
+            const indiciesBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indiciesBuffer)
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW)
+
+            let modelMatrix = new Matrix4()
+            // 1.绘制基座
+            modelMatrix.setTranslate(0,-12,0)
+            drawBox(10,2,10)
+            // 2.绘制前臂
+            modelMatrix.translate(0,6,0)
+            modelMatrix.rotate(arm1Angle,0,1,0)
+            drawBox(3,10,3)
+            // 3.绘制小臂
+            modelMatrix.translate(0,10,0)
+            modelMatrix.rotate(join1Angle,0,0,1)
+            drawBox(3,10,3)
+            // 4.绘制手掌
+            modelMatrix.translate(0,6,0)
+            modelMatrix.rotate(join2Angle,1,0,0)
+            drawBox(10,2,2)
+            // 5.绘制两个手指
+            modelMatrix.translate(-2,2,0)
+            modelMatrix.rotate(join3Angle,1,0,0)
+            drawBox(2,4,2)
+            modelMatrix.translate(4,0,0)
+            modelMatrix.rotate(join3Angle,1,0,0)
+            drawBox(2,4,2)
+
+            // 绘制矩形
+            function drawBox(width,height,length){
+                pushMatrix(modelMatrix)
+                modelMatrix.scale(width,height,length)
+                // 处理变换矩阵
+                mvpMatrix.set(viewProjMatrix)
+                mvpMatrix.multiply(modelMatrix)
+                gl.uniformMatrix4fv(a_MvpMatrix,false,mvpMatrix.elements)
+                gl.drawElements(gl.TRIANGLE_FAN,indices.length,gl.UNSIGNED_BYTE,0)
+                modelMatrix =  popMatrix()
+            }
+            // 注册键盘事件
+            document.onkeydown = (e)=>{
+                console.log(e);
+            }
+            
+            // 初始化缓冲区
+            function initBuffers(data,attribute){
+                const buffer = gl.createBuffer()
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer)
+                gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW)
+                gl.vertexAttribPointer(attribute,3,gl.FLOAT,false,0,0)
+                gl.enableVertexAttribArray(attribute)
+            }
+
+            // 矩阵 压栈
+            // 矩阵 出栈
+            function pushMatrix(matrix){
+                const newMatrix = new Matrix4(matrix)
+                allMatrix.push(newMatrix)
+            }
+            function popMatrix(){
+                return allMatrix.pop()
+            }
+        }
+    </script>
+</body>
+</html>
