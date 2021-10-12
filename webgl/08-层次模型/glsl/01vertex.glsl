@@ -10,6 +10,6 @@ void main(){
     gl_Position = u_MvpMatrix * a_Position;
     vec3 normal  = normalize(vec3(u_NormalMatrix * a_Normal)); // 法向量归一化
     float nDot = max(dot(u_LightDirection,normal),0.0);
-    vec3 diffuse = u_LightColor * vec3(a_Color) * nDot;
+    vec3 diffuse = u_LightColor * nDot * vec3(a_Color);
     v_Color = vec4(diffuse,a_Color.a);
 }
