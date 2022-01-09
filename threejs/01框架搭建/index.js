@@ -13,6 +13,7 @@
         this.start_render()
         this.on_resize()
         this.init_mouse_control()
+        this.add_box()
     }
 
     get_dom(){
@@ -45,9 +46,6 @@
     }
 
     start_render() {
-        // this.rotationSpeed+=0.01
-        const aa = this.rotationSpeed
-        console.log(aa);
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.start_render.bind(this));
     }
@@ -67,6 +65,11 @@
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true; // 开启惯性
         this.controls.dampingFactor = 0.8;
+    }
+
+    add_box(){
+        const geometry = new THREE.Geometry()
+        
     }
 }
 
