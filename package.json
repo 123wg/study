@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@types/three": "^0.136.1",
+    "save-dev": "^0.0.1-security",
+    "three": "^0.136.0",
+    "three-orbit-controls": "^82.1.0"
+  }
+}
